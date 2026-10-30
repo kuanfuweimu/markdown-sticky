@@ -1,0 +1,12 @@
+node_modules/
+dist/
+release/
+data/
+test-data-*/
+test-sync-data/
+test-renderer-sync-data/
+*.log
+*.tmp
+*.bak
+.env
+.env.*

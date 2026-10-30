@@ -1,0 +1,52 @@
+{
+  "name": "markdown-sticky",
+  "version": "1.0.1",
+  "description": "Local Markdown sticky notes for Windows",
+  "author": "Kuanfu Weimu",
+  "private": true,
+  "main": "main.cjs",
+  "scripts": {
+    "icon": "node work-icon.cjs",
+    "build": "esbuild src/renderer.js --bundle --format=iife --outfile=dist/renderer.js",
+    "start": "npm run build && electron .",
+    "test": "node --test test/*.test.mjs",
+    "package": "npm run build && electron-builder --win dir --x64"
+  },
+  "build": {
+    "appId": "studio.weimu.markdownsticky",
+    "productName": "Markdown Sticky",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "main.cjs",
+      "preload.cjs",
+      "store.cjs",
+      "index.html",
+      "style.css",
+      "dist/**/*",
+      "assets/**/*"
+    ],
+    "extraResources": [{ "from": "assets/icon.ico", "to": "icon.ico" }],
+    "win": {
+      "target": "dir",
+      "signAndEditExecutable": true,
+      "icon": "assets/icon.ico"
+    }
+  },
+  "dependencies": {
+    "@tiptap/core": "^3.32.0",
+    "@tiptap/extension-placeholder": "^3.32.0",
+    "@tiptap/extension-task-item": "^3.32.0",
+    "@tiptap/extension-task-list": "^3.32.0",
+    "@tiptap/markdown": "^3.32.0",
+    "@tiptap/starter-kit": "^3.32.0"
+  },
+  "devDependencies": {
+    "electron": "^45.0.0",
+    "electron-builder": "^26.18.0",
+    "esbuild": "^0.28.2",
+    "jsdom": "^30.1.3"
+  },
+  "type": "module"
+}

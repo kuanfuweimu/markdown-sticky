@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'"><title>Markdown Sticky</title><link rel="stylesheet" href="style.css"></head>
+<body>
+  <header class="titlebar">
+    <button id="new" class="icon" title="New note · Ctrl+N" aria-label="New note">＋</button>
+    <span id="windowTitle">Sticky</span>
+    <button id="pin" class="icon" title="Keep on top" aria-label="Keep on top"><svg viewBox="0 0 24 24"><path d="m8 3 8 0-1 6 3 3v2H6v-2l3-3-1-6ZM12 14v7"/></svg></button>
+    <button id="library" class="icon" title="All notes" aria-label="All notes"><svg viewBox="0 0 24 24"><path d="M8 5h12M8 12h12M8 19h12M3 5h1M3 12h1M3 19h1"/></svg></button>
+    <button id="minimize" class="icon" title="Minimize" aria-label="Minimize">−</button>
+    <button id="close" class="icon close" title="Close window (content is kept)" aria-label="Close">×</button>
+  </header>
+  <nav class="toolbar">
+    <button data-format="heading" title="Heading">H</button><button data-format="bold" title="Bold · Ctrl+B"><b>B</b></button>
+    <button data-format="bullet" title="Bulleted list">• ≡</button><button data-format="ordered" title="Numbered list">1.</button><button data-format="task" title="To-do list">☑</button>
+    <span class="spacer"></span><button id="more" class="icon" aria-label="More options" title="More options">⋯</button>
+  </nav>
+  <main id="editorArea"><div id="rich" class="prose"></div></main>
+  <footer><span id="status" role="status">Loading…</span><span id="hint">Tab to indent · Enter continues lists</span></footer>
+  <aside id="menu" class="popover" hidden>
+    <div class="tone">
+      <div class="toneHead"><span>Tone</span><output id="toneValue" for="tone">0%</output></div>
+      <input id="tone" type="range" min="0" max="100" step="1" value="0" aria-label="Note tone, white to black">
+      <div class="presets" aria-label="Tone presets"><button data-tone="0" title="White"></button><button data-tone="6" title="Mist"></button><button data-tone="18" title="Silver"></button><button data-tone="82" title="Graphite"></button><button data-tone="100" title="Black"></button></div>
+    </div>
+    <button id="import">Import .md file</button><button id="export">Export .md file</button><button id="folder">Open notes folder</button><button id="help">Shortcuts &amp; help</button><button id="archive">Archive this note</button>
+  </aside>
+  <section id="drawer" hidden><div class="drawerHead"><strong>All notes</strong><button id="drawerClose" class="icon" aria-label="Close list">×</button></div><input id="search" placeholder="Search notes…" aria-label="Search notes"><label class="archived"><input id="showArchived" type="checkbox"> Show archived notes</label><div id="noteList"></div></section>
+  <dialog id="helpDialog"><h2>Writes like a sticky note</h2><p>Tab indents, Shift+Tab outdents. Enter continues a list; Enter on an empty item ends it.</p><p>Type <code>#&nbsp;</code> for a heading, <code>1.&nbsp;</code> for a numbered list, <code>-&nbsp;</code> for bullets and <code>- [ ]&nbsp;</code> for a to-do.</p><p>Ctrl+N new · Ctrl+S save<br>Ctrl+B bold · Ctrl+Z undo<br>Press Esc, then Tab, to leave the editor.</p><p>Closing a window keeps its content; reopen it from All notes. Archived notes can be restored and are never deleted.</p><p>Headings, lists, to-dos, quotes and code are supported. Notes with tables, images or HTML (usually imported files) open read-only so nothing is lost.</p><button id="helpClose">Got it</button></dialog>
+  <script src="dist/renderer.js"></script>
+</body></html>

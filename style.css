@@ -1,0 +1,125 @@
+:root{font-family:"Segoe UI Variable Text","Segoe UI","Microsoft YaHei UI",sans-serif;font-size:14px;font-synthesis:none}
+*{box-sizing:border-box}[hidden]{display:none!important}
+/* Tone variables are overwritten per note from JS; these defaults are the white tone. */
+body{--paper:#fff;--bar:#f2f2f2;--surface:#fff;--ink:#141414;--tint:0 0 0;--line:rgb(var(--tint)/.1);--hover:rgb(var(--tint)/.06);--press:rgb(var(--tint)/.12);--muted:color-mix(in srgb,var(--ink) 55%,transparent);margin:0;height:100vh;display:flex;flex-direction:column;background:var(--paper);color:var(--ink);overflow:hidden}
+::selection{background:rgb(var(--tint)/.18)}
+button,input{font:inherit;color:inherit}
+button{border:0;background:transparent;border-radius:6px;cursor:pointer}
+button:hover{background:var(--hover)}
+button:focus-visible,input:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
+button:disabled{opacity:.35;cursor:default}
+.icon{width:31px;height:30px;display:inline-flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.icon svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.titlebar{height:40px;min-height:40px;background:var(--bar);display:flex;align-items:center;gap:1px;padding:0 7px;-webkit-app-region:drag;user-select:none}
+.titlebar button{-webkit-app-region:no-drag}
+.titlebar #windowTitle{font-size:12px;flex:1;color:var(--muted);margin-left:6px;letter-spacing:.2px}
+.titlebar .close:hover{background:var(--ink);color:var(--paper)}
+.active{background:var(--press)}
+.toolbar{min-height:43px;display:flex;gap:2px;align-items:center;padding:5px 12px;border-bottom:1px solid var(--line);user-select:none}
+.toolbar button{padding:5px 7px;font-size:13px;white-space:nowrap}
+.spacer{flex:1}
+#editorArea{position:relative;flex:1;min-height:0}
+.prose{height:100%;overflow:auto;padding:18px 24px 80px;font-size:15px;line-height:1.8;overflow-wrap:anywhere}
+.tiptap{outline:none;min-height:100%;white-space:pre-wrap}
+.prose p{margin:0 0 12px}
+.prose h1{font-size:26px;line-height:1.3;margin:3px 0 18px;font-weight:650;letter-spacing:-.4px}
+.prose h2{font-size:19px;line-height:1.4;margin:25px 0 12px;font-weight:650}
+.prose h3{font-size:16px;margin:18px 0 9px}.prose h4,.prose h5,.prose h6{font-size:15px}
+.prose ul,.prose ol{padding-left:24px;margin:9px 0 17px}.prose li{padding-left:2px;margin:4px 0}.prose li p{margin:0}.prose li ul,.prose li ol{margin:5px 0}
+.prose ul[data-type=taskList]{list-style:none;padding-left:0}
+.prose ul[data-type=taskList] li{display:flex;gap:9px;align-items:flex-start}
+.prose ul[data-type=taskList] li>div{flex:1;min-width:0}
+.prose ul[data-type=taskList] label{padding-top:1px;user-select:none}
+.prose input[type=checkbox]{accent-color:var(--ink);width:15px;height:15px;cursor:pointer}
+.prose li[data-checked=true]>div>p{text-decoration:line-through;opacity:.45}
+.prose blockquote{border-left:3px solid rgb(var(--tint)/.25);margin:16px 0;padding-left:15px;color:var(--muted)}
+.prose code{font-family:"Cascadia Code",Consolas,monospace;font-size:.88em;background:var(--hover);padding:2px 4px;border-radius:4px}
+.prose pre{white-space:pre-wrap;background:var(--hover);border-radius:6px;padding:12px;tab-size:4}.prose pre code{padding:0;background:none}
+.prose a{color:inherit;text-decoration-color:rgb(var(--tint)/.4);text-underline-offset:3px}
+.prose hr{border:0;border-top:1px solid var(--line);margin:22px 0}
+.prose table{border-collapse:collapse}.prose td,.prose th{border:1px solid var(--line);padding:6px}
+.tiptap p.is-editor-empty:first-child:before{content:attr(data-placeholder);float:left;color:var(--muted);opacity:.7;pointer-events:none;height:0}
+footer{height:29px;min-height:29px;padding:0 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:10px;color:var(--muted);border-top:1px solid var(--line);user-select:none}
+#status.error{color:var(--ink);font-weight:600;font-size:11px}
+#hint{white-space:nowrap}
+.popover{position:absolute;right:10px;top:80px;width:214px;z-index:10;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);box-shadow:0 10px 35px rgb(0 0 0/.18);padding:8px}
+.popover>button{display:block;width:100%;text-align:left;padding:9px 10px;font-size:13px}
+.tone{padding:6px 10px 12px;border-bottom:1px solid var(--line);margin-bottom:5px}
+.toneHead{display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px}
+.toneHead output{color:var(--muted);font-variant-numeric:tabular-nums}
+#tone{-webkit-appearance:none;appearance:none;width:100%;height:20px;margin:0;background:transparent;cursor:pointer}
+#tone::-webkit-slider-runnable-track{height:6px;border-radius:3px;background:linear-gradient(90deg,#fff,#000);box-shadow:inset 0 0 0 1px rgb(127 127 127/.35)}
+#tone::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;margin-top:-5px;border-radius:50%;background:var(--paper);border:1.5px solid var(--ink);box-shadow:0 1px 4px rgb(0 0 0/.3)}
+.presets{display:flex;justify-content:space-between;margin-top:10px}
+.presets button{width:24px;height:24px;border-radius:50%;border:1px solid rgb(127 127 127/.45)}
+#drawer{position:absolute;inset:40px 0 29px;background:var(--surface);z-index:20;padding:16px 20px;overflow:auto}
+.drawerHead{display:flex;align-items:center;justify-content:space-between;margin-bottom:15px}
+.drawerHead strong{font-size:20px;font-weight:600}
+#search{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:6px;background:var(--paper)}
+#search::placeholder{color:var(--muted)}
+.archived{display:flex;align-items:center;font-size:12px;gap:5px;margin:12px 0;color:var(--muted)}
+.archived input{accent-color:var(--ink)}
+.noteCard{display:block;text-align:left;padding:15px;margin:10px 0;width:100%;background:var(--paper);color:var(--ink);border:1px solid var(--line)}
+.noteCard strong{display:block;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.noteCard span{display:block;font-size:11px;opacity:.6;margin-top:8px}
+dialog{border:1px solid var(--line);border-radius:10px;max-width:calc(100% - 35px);max-height:85vh;background:var(--surface);color:var(--ink);padding:22px;box-shadow:0 16px 70px rgb(0 0 0/.25);font-size:13px;line-height:1.75}
+dialog h2{margin:0;font-size:21px}
+dialog code{background:var(--hover);padding:1px 4px;border-radius:4px}
+dialog button{padding:8px 16px;background:var(--ink);color:var(--paper)}
+dialog button:hover{background:var(--ink);opacity:.85}
+dialog::backdrop{background:rgb(0 0 0/.25)}
+::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-thumb{background:rgb(var(--tint)/.18);border-radius:5px}
+@media(max-width:380px){.toolbar{padding:5px 8px;gap:0}.toolbar button{padding:5px}#hint{display:none}.prose{padding-left:19px;padding-right:19px}}
+
+/* Motion: macOS-style curves and durations. Enter eases out quickly, exit eases in and is shorter. */
+:root{--ease-out:cubic-bezier(.2,.9,.25,1);--ease-in:cubic-bezier(.45,0,.8,.3);--ease-spring:cubic-bezier(.34,1.5,.6,1);--t-fast:140ms;--t-base:220ms;--t-slow:320ms}
+body,.titlebar{transition:background-color var(--t-slow) var(--ease-out),color var(--t-slow) var(--ease-out)}
+/* Dragging the tone slider must track the pointer, not lag behind a transition. */
+body.scrubbing,body.scrubbing *{transition:none!important}
+button{transition:background-color var(--t-fast) ease,color var(--t-fast) ease,opacity var(--t-base) ease,box-shadow var(--t-base) var(--ease-out),transform var(--t-base) var(--ease-spring)}
+button:active:not(:disabled){background:var(--press);transition-duration:40ms}
+.titlebar .close:active{background:var(--ink);color:var(--paper);opacity:.8}
+.icon svg{transition:fill var(--t-base) ease}
+#pin.active svg{fill:currentColor;fill-opacity:.22}
+button:focus-visible:not(.noteCard),input:not([type=checkbox]):focus-visible{animation:focus-ring var(--t-base) var(--ease-out)}
+@keyframes focus-ring{from{outline-offset:4px;outline-color:transparent}}
+#tone::-webkit-slider-thumb{transition:transform var(--t-base) var(--ease-spring)}
+#tone:hover::-webkit-slider-thumb{transform:scale(1.12)}
+#tone:active::-webkit-slider-thumb{transform:scale(.94)}
+
+.popover{transform-origin:top right;background:color-mix(in srgb,var(--surface) 90%,transparent);backdrop-filter:blur(18px) saturate(1.4);animation:pop-in var(--t-base) var(--ease-out)}
+.popover.leaving{animation:pop-out var(--t-fast) var(--ease-in) forwards;pointer-events:none}
+@keyframes pop-in{from{opacity:0;transform:translateY(-4px) scale(.95)}}
+@keyframes pop-out{to{opacity:0;transform:scale(.97)}}
+.presets button{transition:transform var(--t-base) var(--ease-spring),box-shadow var(--t-base) var(--ease-out)}
+.presets button:hover{transform:scale(1.12)}
+.presets button:active{transform:scale(.92);transition-duration:60ms}
+.presets button[aria-pressed=true]{box-shadow:0 0 0 2px var(--surface),0 0 0 3.5px var(--ink)}
+
+#drawer{animation:sheet-in var(--t-slow) var(--ease-out)}
+#drawer.leaving{animation:sheet-out 180ms var(--ease-in) forwards;pointer-events:none}
+@keyframes sheet-in{from{opacity:0;transform:translateY(14px)}}
+@keyframes sheet-out{to{opacity:0;transform:translateY(10px)}}
+#noteList .noteCard{animation:fade-in var(--t-fast) ease-out;transition:background-color var(--t-slow) ease,box-shadow var(--t-base) var(--ease-out),transform var(--t-base) var(--ease-out)}
+#noteList.stagger .noteCard{animation:card-in var(--t-slow) var(--ease-out) backwards;animation-delay:calc(min(var(--i),10) * 24ms + 60ms)}
+#noteList .noteCard:hover{background:var(--paper);transform:translateY(-1px);box-shadow:0 4px 14px rgb(0 0 0/.08)}
+#noteList .noteCard:active{transform:scale(.985);box-shadow:none;transition-duration:60ms}
+@keyframes card-in{from{opacity:0;transform:translateY(8px)}}
+@keyframes fade-in{from{opacity:0}}
+@keyframes fade-out{to{opacity:0}}
+
+dialog{margin:52px auto auto}
+dialog[open]{animation:sheet-drop var(--t-slow) var(--ease-out)}
+dialog[open]::backdrop{animation:fade-in var(--t-base) ease-out}
+dialog.leaving{animation:sheet-lift 180ms var(--ease-in) forwards}
+dialog.leaving::backdrop{animation:fade-out 180ms ease-in forwards}
+@keyframes sheet-drop{from{opacity:0;transform:translateY(-18px) scale(.98)}}
+@keyframes sheet-lift{to{opacity:0;transform:translateY(-12px) scale(.98)}}
+
+#editorArea.swap-in{animation:view-in 260ms var(--ease-out)}
+@keyframes view-in{from{opacity:0;transform:translateY(5px)}}
+
+.prose ul[data-type=taskList] li>div>p{text-decoration:line-through;text-decoration-color:transparent;transition:opacity var(--t-base) ease,text-decoration-color var(--t-base) ease}
+.prose li[data-checked=true]>div>p{text-decoration-color:currentColor}
+
+@media (prefers-reduced-motion:reduce){*,*::before,*::after,::backdrop{animation-duration:1ms!important;animation-delay:0s!important;transition-duration:1ms!important}}

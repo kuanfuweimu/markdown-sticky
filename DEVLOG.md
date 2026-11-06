@@ -26,3 +26,24 @@
 
 - [Electron IPC renderer API](https://www.electronjs.org/docs/latest/api/ipc-renderer)
 - [Node.js file system API](https://nodejs.org/api/fs.html)
+
+---
+
+## English development log
+
+### 2026-10-31 · v1.0.1 · Sync external notes while running
+
+**Problem and reproduction.** After app startup, a Markdown file with a valid UUID filename was written into `notes/`. The file existed but All notes omitted it. Previously NoteStore scanned only during construction, then used its in-memory index without notifying open windows.
+
+**Implementation**
+- Storage adds on-demand scans and shared background polling, persists newly found notes and skips removed files.
+- The main process broadcasts file changes and in-app creation, saving and archiving to all windows. Preload exposes only restricted subscribe/unsubscribe callbacks.
+- The renderer refreshes open lists and reloads notes without local edits. A delayed IPC response cannot overwrite typing that began while waiting.
+- Saving includes a content-revision digest. Conflicts or deleted originals preserve local edits as a separate copy and bind the current window to that copy.
+- Tests found that initialization formatting also emitted update events. Loading updates and transactions without original-document changes are now excluded to prevent accidental autosave over external files.
+
+**Validation.** 23 tests cover existing editing features, file discovery, atomic replacement, background notifications, open-list refresh, clean-window updates, edit conflicts, delayed responses, deletion, backups and metadata preservation. Tests use temporary directories and an in-memory DOM, not the user's screen.
+
+**Release and limitations.** Source, changelog and Windows package all use v1.0.1. Build output is isolated from user data. One restart loads updated code; file sync then runs automatically. Files written directly into `notes/` follow the existing UUID.md convention; arbitrary filenames can be added through Import.
+
+References: [Electron IPC renderer API](https://www.electronjs.org/docs/latest/api/ipc-renderer), [Node.js file system API](https://nodejs.org/api/fs.html).

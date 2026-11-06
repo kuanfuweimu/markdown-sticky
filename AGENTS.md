@@ -9,3 +9,17 @@
 - Build into release/, never into an installed app folder containing data/. A release archive must not contain a data/ directory. Back up the installed program and notes before replacing app resources.
 - An update may require a one-time relaunch to load new code. Do not force-kill the running app or risk unsaved text. Clearly distinguish source/build completion, installation, and activation.
 - Maintain live discovery of UUID-named Markdown files, automatic list updates, and revision checks that preserve both versions when external changes conflict with unsaved typing.
+
+---
+
+## 中文维护规则
+
+- 这是用户现有 Markdown Sticky 桌面应用的源码。修改或安装前检查当前应用及源码，保留用户便签。
+- 不使用桌面/浏览器 UI 自动化、截图、鼠标或键盘模拟；使用代码、CLI、文件和隔离测试。
+- 在用户 Windows 电脑工作时，开发文件、备份与发布资产按本仓库原规则保存在 D 盘；当前会话明确指定位置时以用户指令优先。
+- 2026-10-31 用户确认：每次软件更新后递增适当版本，更新 CHANGELOG.md 和 DEVLOG.md，运行相关测试，提交推送并发布包含 Windows 构建与说明的版本化 GitHub Release。除非用户要求，不改变仓库可见性。
+- 仓库为 https://github.com/kuanfuweimu/markdown-sticky；不得悄悄切换仓库或丢弃其他协作者修改。
+- 不提交或上传个人便签、data/index.json、运行缓存、登录凭据或机器特定私有路径。测试与日志使用合成数据。
+- 构建到 release/，不构建到包含 data/ 的安装目录。发布包不能含 data/；替换应用资源前备份程序与便签。
+- 更新可能需要重开一次来加载代码，不强杀应用或危及未保存文字。区分源码/构建完成、安装完成及实际生效。
+- 保留 UUID Markdown 自动发现、列表自动更新及修订检查；外部修改与未保存输入冲突时必须保留两份。

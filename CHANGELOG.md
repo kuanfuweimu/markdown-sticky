@@ -20,3 +20,26 @@
 ## 1.0.0 — 2026-10-26
 
 - 首个本地版本：即时 Markdown 排版、Tab 缩进、列表续写、待办复选框、多窗口、置顶、灰度主题及本地自动保存。
+
+---
+
+## English changelog
+
+### 1.0.1 — 2026-10-31
+
+**Fixes**
+- New Markdown notes created while the app is running now appear in All notes within about one second, even when the list is already open.
+- External changes refresh clean windows; externally deleted files no longer break loading of the whole list.
+- Conflicting external edits and unsaved typing retain both versions: the external file is preserved and local typing becomes a new note marked Local copy.
+- Automatic formatting during editor initialization or selection restoration no longer counts as user editing, preventing files from being rewritten merely by opening them.
+
+**Maintenance**
+- Added file-sync and concurrent-edit regressions; all 23 tests passed.
+- Builds now use a separate `release/` directory so packaging does not touch installed user data.
+- Established GitHub source, development-log and versioned-release workflows. Release archives exclude personal notes.
+
+Relaunch once after installing this fix to load the new code. Subsequent note creation and edits do not require a restart.
+
+### 1.0.0 — 2026-10-26
+
+First local version: instant Markdown formatting, Tab indentation, list continuation, to-do checkboxes, multiple windows, always-on-top, grayscale themes and local autosave.

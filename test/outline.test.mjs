@@ -122,40 +122,97 @@ test('mind map layout hides folded branches and keeps parents centred on childre
   e.destroy();
 });
 
-test('bundled renderer switches to mind map, folds from the map and opens a node in the outline', async () => {
-  const metas = [];
+async function openMap(content, extra = {}) {
   const w = new JSDOM(fs.readFileSync('index.html', 'utf8'), { runScripts: 'outside-only', pretendToBeVisual: true, url: 'http://localhost' }).window;
   w.Range.prototype.getClientRects = () => [];
   w.Range.prototype.getBoundingClientRect = () => ({ left: 0, right: 0, top: 0, bottom: 0, width: 0, height: 0 });
   w.Element.prototype.scrollIntoView = () => {};
-  let saves = 0;
-  w.notes = { load: async () => ({ id: 'test', mode: 'rich', tone: 0, content: SAMPLE, pinned: false }), save: () => { saves++; return { ok: true }; }, meta: async p => { metas.push(p); return p; } };
+  const saved = [], metas = [];
+  w.notes = { load: async () => ({ id: 'test', mode: 'rich', tone: 0, content, pinned: false, ...extra }), save: md => { saved.push(md); return { ok: true }; }, meta: async p => { metas.push(p); return p; } };
   w.eval(fs.readFileSync('dist/renderer.js', 'utf8'));
   await new Promise(r => setTimeout(r, 80));
-  const d = w.document, toggle = d.getElementById('viewToggle');
-  toggle.click(); await new Promise(r => setTimeout(r, 20));
+  const d = w.document, map = d.getElementById('mindmap');
+  const labels = () => [...d.querySelectorAll('.mm-node')].map(n => n.querySelector('.mm-label, input')?.value ?? n.querySelector('.mm-label').textContent);
+  const nodeEl = label => [...d.querySelectorAll('.mm-node')].find(n => n.querySelector('.mm-label')?.textContent === label);
+  const press = (el, target = el) => { target.dispatchEvent(new w.MouseEvent('pointerdown', { bubbles: true, button: 0, clientX: 5, clientY: 5 })); target.dispatchEvent(new w.MouseEvent('pointerup', { bubbles: true, button: 0, clientX: 5, clientY: 5 })); };
+  const key = (k, opts = {}, target = map) => target.dispatchEvent(new w.KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true, ...opts }));
+  const tick = (ms = 20) => new Promise(r => setTimeout(r, ms));
+  return { w, d, map, saved, metas, labels, nodeEl, press, key, tick };
+}
+
+test('bundled renderer switches to mind map, folds from the map and opens a node in the outline', async () => {
+  const { w, d, saved, metas, labels, nodeEl, press, tick } = await openMap(SAMPLE);
+  d.getElementById('viewToggle').click(); await tick();
   assert.equal(d.getElementById('mindmap').hidden, false);
   assert.equal(d.getElementById('rich').hidden, true);
   assert.ok(d.querySelector('[data-format=bold]').disabled);
-  const nodes = [...d.querySelectorAll('.mm-node')];
-  assert.equal(nodes[0].textContent, '计划');
-  assert.equal(nodes.length, 10);
-  nodes.find(n => n.textContent === '工作').click();
-  await new Promise(r => setTimeout(r, 40));
-  assert.equal(d.querySelectorAll('.mm-node').length, 6);
-  assert.ok(d.querySelector('.mm-node.collapsed .mm-count'));
+  assert.equal(labels()[0], '计划');
+  assert.equal(labels().length, 10);
+  press(nodeEl('工作'), nodeEl('工作').querySelector('.mm-fold')); await tick(40);
+  assert.equal(labels().length, 6);
+  assert.ok(d.querySelector('.mm-node.collapsed .mm-fold'));
   assert.ok(d.querySelector('h2.folded'), 'fold is shared with the outline');
-  [...d.querySelectorAll('.mm-node')].find(n => n.textContent === '周末').dispatchEvent(new w.MouseEvent('dblclick', { bubbles: true }));
-  await new Promise(r => setTimeout(r, 20));
-  assert.equal(d.getElementById('mindmap').hidden, true);
-  assert.equal(d.getElementById('rich').hidden, false);
-  assert.deepEqual(metas.map(m => m.view), ['mindmap', 'outline']);
-  await new Promise(r => setTimeout(r, 450));
+  const table = await openMap('# 根\n\n```\nconst a = 1;\n```');
+  table.d.getElementById('viewToggle').click(); await tick();
+  table.nodeEl('const a = 1;').dispatchEvent(new table.w.MouseEvent('dblclick', { bubbles: true }));
+  await tick();
+  assert.equal(table.d.getElementById('mindmap').hidden, true, 'non-editable nodes open in the outline');
+  table.w.close();
+  assert.deepEqual(metas.map(m => m.view), ['mindmap']);
+  await tick(450);
   w.dispatchEvent(new w.Event('blur'));
-  assert.equal(saves, 0, 'viewing and folding never save the file');
+  assert.equal(saved.length, 0, 'viewing and folding never save the file');
   w.close();
 });
 
+test('mind map edits: Tab adds a child, Enter a sibling, double-click renames, Delete removes, all saved as Markdown', async () => {
+  const { w, d, map, saved, labels, nodeEl, press, key, tick } = await openMap('# 计划\n\n- 工作\n- 生活');
+  d.getElementById('viewToggle').click(); await tick();
+  press(nodeEl('工作')); assert.ok(nodeEl('工作').classList.contains('selected'));
+  key('Tab'); await tick();
+  let input = d.querySelector('.mm-input'); assert.ok(input, 'new child opens for typing');
+  input.value = '写周报'; key('Enter', {}, input); await tick();
+  assert.ok(labels().includes('写周报'));
+  key('Enter'); await tick();
+  input = d.querySelector('.mm-input'); input.value = '开会'; key('Enter', {}, input); await tick();
+  nodeEl('生活').dispatchEvent(new w.MouseEvent('dblclick', { bubbles: true })); await tick();
+  input = d.querySelector('.mm-input'); assert.equal(input.value, '生活');
+  input.value = '休息'; key('Enter', {}, input); await tick();
+  key('Tab'); await tick(); key('Escape', {}, d.querySelector('.mm-input')); await tick();
+  press(nodeEl('开会')); key('Delete'); await tick();
+  await tick(450);
+  assert.equal(saved.at(-1).trim(), '# 计划\n\n- 工作\n  - 写周报\n- 休息');
+  assert.equal(d.querySelector('.tiptap li li').textContent, '写周报', 'outline shows the map edit');
+  key('z', { ctrlKey: true }); await tick();
+  assert.ok(labels().includes('开会'), 'Ctrl+Z restores the deleted node');
+  assert.equal(map.contains(d.activeElement) || d.activeElement === map, true);
+  w.close();
+});
+
+test('mind map drag and drop moves a node under a new parent', async () => {
+  const { w, d, saved, nodeEl, tick } = await openMap('# 计划\n\n- 工作\n  - 设计\n- 生活');
+  d.getElementById('viewToggle').click(); await tick();
+  const src = nodeEl('设计'), dst = nodeEl('生活');
+  dst.getBoundingClientRect = () => ({ left: 100, right: 200, top: 100, bottom: 128, width: 100, height: 28 });
+  d.elementFromPoint = () => dst;
+  const ev = (type, x, y) => new w.MouseEvent(type, { bubbles: true, button: 0, clientX: x, clientY: y });
+  src.dispatchEvent(ev('pointerdown', 10, 10));
+  src.dispatchEvent(ev('pointermove', 60, 60));
+  src.dispatchEvent(ev('pointermove', 150, 114));
+  assert.ok(dst.classList.contains('drop-child'));
+  src.dispatchEvent(ev('pointerup', 150, 114)); await tick(450);
+  assert.equal(saved.at(-1).trim(), '# 计划\n\n- 工作\n- 生活\n  - 设计');
+  assert.equal(d.querySelectorAll('.mm-ghost').length, 0);
+  w.close();
+});
+
+test('read-only notes show the map but block edits', async () => {
+  const { w, d, saved, nodeEl, press, key, tick } = await openMap('# 根\n\n- 叶\n\n| a | b |\n|---|---|\n| 1 | 2 |');
+  d.getElementById('viewToggle').click(); await tick();
+  press(nodeEl('叶')); key('Delete'); key('Tab'); await tick(450);
+  assert.ok(nodeEl('叶')); assert.equal(d.querySelector('.mm-input'), null); assert.equal(saved.length, 0);
+  w.close();
+});
 test('a note saved in mind map view reopens in mind map view', async () => {
   const w = new JSDOM(fs.readFileSync('index.html', 'utf8'), { runScripts: 'outside-only', pretendToBeVisual: true, url: 'http://localhost' }).window;
   w.Range.prototype.getClientRects = () => [];
@@ -164,6 +221,6 @@ test('a note saved in mind map view reopens in mind map view', async () => {
   w.eval(fs.readFileSync('dist/renderer.js', 'utf8'));
   await new Promise(r => setTimeout(r, 80));
   assert.equal(w.document.getElementById('mindmap').hidden, false);
-  assert.deepEqual([...w.document.querySelectorAll('.mm-node')].map(n => n.textContent), ['根', '叶']);
+  assert.deepEqual([...w.document.querySelectorAll('.mm-node .mm-label')].map(n => n.textContent), ['根', '叶']);
   w.close();
 });

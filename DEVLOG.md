@@ -1,5 +1,20 @@
 # 开发日志
 
+## 2026-11-11 · v1.3.0 · 可编辑、可拖动的思维导图
+
+**反馈**：导图无法移动，希望在导图中直接编辑。
+
+**实现**
+
+- src/mindmap-edit.js：新增子节点、同级、改名、删除、勾选、移动，全部写成编辑器事务，所以自动保存、可撤销，并即时反映到大纲。节点用文档位置标识；标题按章节范围（到下一个同级或更高标题）操作，列表项按所在列表操作，删除列表中唯一项时一并删除空列表。
+- 拖放语义：标题只能放在标题前后或成为其子章节，移动时整体调整层级；列表项和段落可放到任何节点下（段落会包装成列表项）；不允许放进自身分支。编辑器末尾的空段落不随章节移动。
+- src/mindmap-view.js 改为 MindmapView 类：按指针事件区分点击、拖动（5px 阈值，悬浮预览与插入线/子节点高亮，靠近边缘自动滚动）和空白处平移；行内输入框编辑，处理输入法组合；新建节点未输入内容时取消即删除。
+- 导图编辑进行中，外部同步跳过重载，避免覆盖正在输入的文字。
+
+**验证**：43 项测试通过；新增覆盖文档层编辑（各节点类型的增删改移与撤销）以及渲染层的键盘编辑、拖放、只读便签保护。jsdom 不做布局，拖放命中通过模拟 elementFromPoint 测试；真实窗口内的拖动手感尚需用户确认。
+
+---
+
 ## 2026-11-11 · v1.2.0 · 浅色/深色切换
 
 **实现**：沿用每张便签的 tone（0–100），不新增主题系统。src/tone.js 的 flipTone 取 100 − tone；若镜像后仍在同一侧（tone 45–55 一带）则切到 0 或 100，保证每次翻转。标题栏按钮显示将切换到的模式（浅色纸面显示月亮，深色显示太阳），Ctrl+Shift+L 同效，结果通过现有 meta 接口保存。
@@ -57,6 +72,18 @@
 ---
 
 ## English development log
+
+### 2026-11-11 · v1.3.0 · Editable, draggable mind map
+
+**Feedback.** The map could not be moved and should be editable in place.
+
+**Implementation**
+- src/mindmap-edit.js adds child, sibling, rename, delete, check and move, all as editor transactions, so they autosave, undo and update the outline. Nodes are identified by document position; headings act on their section (to the next heading of the same or higher level), list items on their list, and removing the only item in a list removes the empty list.
+- Drop rules: headings go before/after headings or become a sub-section, shifting levels together; list items and paragraphs can go under any node (paragraphs are wrapped as list items); a node cannot be dropped into its own branch. The editor's trailing empty paragraph stays put.
+- src/mindmap-view.js becomes a MindmapView class. Pointer events distinguish click, drag (5px threshold, floating preview, insertion line or child highlight, edge auto-scroll) and background panning. Inline input editing handles IME composition; a new node left empty is removed.
+- While a map label is being edited, external sync skips reloading so typing is not overwritten.
+
+**Validation.** 43 tests pass, including document-level edits for every node kind with undo, and renderer-level keyboard editing, drag and drop, and read-only protection. jsdom has no layout, so drop targeting is tested by stubbing elementFromPoint; drag feel in the real window still needs user confirmation.
 
 ### 2026-11-11 · v1.2.0 · Light/dark switch
 

@@ -1,13 +1,13 @@
 import { Editor } from '@tiptap/core';
 import { richExtensions, requiresSource } from './editors.js';
 import { clampTone, palette, flipTone } from './tone.js';
-import { autoHeadingLevel, getFolds, setFolds, toggleFold, outlineKey } from './outline.js';
-import { renderMindmap } from './mindmap-view.js';
+import { autoHeadingLevel, getFolds, setFolds, outlineKey } from './outline.js';
+import { MindmapView } from './mindmap-view.js';
 
 const $ = id => document.getElementById(id);
 let note, rich, content = '', dirty = false, saveTimer, list = [], escapeTab = false, readOnly = false;
 let editVersion = 0, syncing = false, syncAgain = false, applyingFile = false, unsubscribe;
-let view = 'outline', zoom = 1, mapFrame = 0;
+let view = 'outline', mapFrame = 0;
 const api = window.notes;
 const EASE_OUT = 'cubic-bezier(.2,.9,.25,1)';
 const reducedMotion = () => !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
@@ -91,18 +91,15 @@ function updateChrome() {
   document.querySelectorAll('[data-format]').forEach(b => b.disabled = readOnly || map);
   $('viewToggle').setAttribute('aria-pressed', String(map)); $('viewToggle').classList.toggle('active', map);
   $('viewToggle').title = map ? 'Back to outline · Ctrl+Shift+M' : 'Mind map · Ctrl+Shift+M';
-  $('hint').textContent = map ? 'Click a branch to fold · Double-click to edit'
+  $('hint').textContent = map ? (readOnly ? 'Read-only note · Drag the background to move' : 'Tab child · Enter sibling · Double-click edit · Drag to move')
     : readOnly ? 'Has tables, images or HTML: read-only to keep it intact' : 'Tab to indent · Ctrl+↑/↓ to fold';
 }
 function scheduleMap() { if (!mapFrame) mapFrame = requestAnimationFrame(() => { mapFrame = 0; if (view === 'mindmap') drawMindmap(); }); }
+let mindmap;
 function drawMindmap() {
   if (!rich) return;
-  const { folded, items } = outlineKey.getState(rich.state);
-  renderMindmap($('mindmap'), rich.state.doc, {
-    title: 'Untitled', folded, zoom, foldable: new Set(items.map(i => i.pos)),
-    onToggle: pos => toggleFold(rich, pos),
-    onOpen: pos => setView('outline', pos),
-  });
+  mindmap ||= new MindmapView($('mindmap'), { editor: () => rich, readOnly: () => readOnly, onOpen: pos => setView('outline', pos) });
+  mindmap.render();
 }
 // Switching views keeps one editor and one fold state, so the outline and the map always show the same branches.
 function setView(next, pos) {
@@ -134,11 +131,12 @@ async function synchronize() {
     do {
       syncAgain = false;
       if (isOpen($('drawer'))) await refreshList();
-      if (dirty || rich?.view.composing) continue;
+      // An open map label edit counts as unsaved typing.
+      if (dirty || rich?.view.composing || mindmap?.editing) continue;
       const version = editVersion, id = note.id;
       const latest = await api.load();
       // Input can arrive while IPC is pending. A late reload must not discard it.
-      if (dirty || rich?.view.composing || version !== editVersion || id !== note.id) continue;
+      if (dirty || rich?.view.composing || mindmap?.editing || version !== editVersion || id !== note.id) continue;
       if (latest.content !== content) {
         const focused = rich.isFocused, selection = rich.state.selection, scroll = $('editorArea').scrollTop;
         // Keep folds whose position still starts a foldable block after an external edit.
@@ -228,7 +226,7 @@ document.addEventListener('keydown', e => {
   else if (key === 'b') { e.preventDefault(); e.stopPropagation(); format('bold'); }
   else if (key === 'm' && e.shiftKey) { e.preventDefault(); e.stopPropagation(); setView(view === 'mindmap' ? 'outline' : 'mindmap'); }
   else if (key === 'l' && e.shiftKey) { e.preventDefault(); e.stopPropagation(); toggleTheme(); }
-  else if (view === 'mindmap' && (key === '=' || key === '+' || key === '-' || key === '0')) { e.preventDefault(); zoom = key === '0' ? 1 : Math.max(.5, Math.min(2, zoom + (key === '-' ? -.1 : .1))); drawMindmap(); }
+  else if (view === 'mindmap' && (key === '=' || key === '+' || key === '-' || key === '0')) { e.preventDefault(); if (mindmap) mindmap.setZoom(key === '0' ? 1 : mindmap.zoom + (key === '-' ? -.1 : .1)); }
 }, true);
 window.addEventListener('beforeunload', e => { if (!flush()) { e.preventDefault(); e.returnValue = false; } });
 window.addEventListener('blur', flush);

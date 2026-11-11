@@ -1,5 +1,18 @@
 # 更新日志
 
+## 1.3.0 — 2026-11-11
+
+### 新功能
+
+- 思维导图可直接编辑：Tab 加子节点、Enter 加同级、双击/F2 改名、Delete 删除整枝、空格折叠、方向键选择、勾选待办。
+- 拖动节点移动：拖到节点上成为子节点，拖到上/下边缘调整顺序；标题连同章节移动并自动调整层级。
+- 拖空白处平移画布，Ctrl+滚轮缩放，Ctrl+Z / Ctrl+Y 撤销重做。
+- 导图编辑即普通文档修改：自动保存为 Markdown，大纲同步更新。
+
+### 维护
+
+- 新增 8 项导图编辑测试，共 43 项通过。
+
 ## 1.2.0 — 2026-11-11
 
 ### 新功能
@@ -47,6 +60,17 @@
 ---
 
 ## English changelog
+
+### 1.3.0 — 2026-11-11
+
+**Features**
+- Editable mind map: Tab adds a child, Enter a sibling, double-click/F2 renames, Delete removes a branch, Space folds, arrow keys select, task checkboxes toggle.
+- Drag nodes to move them: onto a node to nest, onto its top/bottom edge to reorder. Heading sections move whole and take the new level.
+- Drag the background to pan, Ctrl+wheel to zoom, Ctrl+Z / Ctrl+Y to undo and redo.
+- Map edits are ordinary document edits: they autosave as Markdown and update the outline at once.
+
+**Maintenance**
+- Added 8 mind-map editing tests; all 43 pass.
 
 ### 1.2.0 — 2026-11-11
 

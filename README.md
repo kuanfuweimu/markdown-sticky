@@ -29,7 +29,7 @@ Open **Markdown Sticky** from the Start menu, or double-click `win-unpacked/Mark
 
 Every note is a foldable outline, in the spirit of outliner apps. Headings fold their whole section and list items with children fold their sub-list, from the arrow that appears in the left gutter. Folded branches show a … marker. The **H** button picks the heading size for you: the first heading becomes the title (H1), later ones match the section above; Tab / Shift+Tab move a heading down or up a level.
 
-The map button next to ⋯ (or Ctrl+Shift+M) switches the same note to a mind map: the opening H1 is the root, headings branch by level and list items by indentation. Click a branch to fold it, double-click any node to jump to it in the outline. Folds are shared by both views, are kept while the window stays open, and never change the Markdown file. Each note remembers which view it was last in.
+The map button next to ⋯ (or Ctrl+Shift+M) switches the same note to a mind map: the opening H1 is the root, headings branch by level and list items by indentation. The map is fully editable: click to select, **Tab** adds a child, **Enter** a sibling, double-click or **F2** renames, **Delete** removes a branch, **Space** folds, arrow keys move the selection. Drag a node onto another to make it a child, or onto its top/bottom edge to reorder; heading sections move whole and take the new level. Drag the background to pan, Ctrl+wheel to zoom, Ctrl+Z to undo. Map edits save to the same Markdown file and show up in the outline at once. Folding is shared by both views and never changes the file. Each note remembers which view it was last in.
 
 ## Tone
 
@@ -92,7 +92,7 @@ Node.js 24+: `npm ci` → `npm run build` → `npm test`. `npm run icon` regener
 
 每张便签都是可折叠大纲，类似幕布。标题折叠整个章节，带子项的列表项折叠其子列表，点击左侧出现的箭头即可；折叠后显示 … 标记。**H** 按钮自动决定标题大小：第一个标题为主标题（H1），之后的标题跟随上方章节层级；在标题上按 Tab / Shift+Tab 降级或升级。
 
-⋯ 左边的导图按钮（或 Ctrl+Shift+M）把同一张便签切换成思维导图：开头的 H1 为中心，标题按层级分支，列表按缩进分支。单击分支折叠，双击节点跳回大纲编辑。两种视图共享折叠状态，窗口打开期间保留，且不会修改 Markdown 文件。每张便签记住上次使用的视图。
+⋯ 左边的导图按钮（或 Ctrl+Shift+M）把同一张便签切换成思维导图：开头的 H1 为中心，标题按层级分支，列表按缩进分支。导图可以直接编辑：单击选中，**Tab** 加子节点，**Enter** 加同级，双击或 **F2** 改名，**Delete** 删除整枝，**空格** 折叠，方向键移动选择。把节点拖到另一个节点上成为它的子节点，拖到上/下边缘则调整顺序；标题会连同整个章节移动并自动调整层级。拖空白处平移，Ctrl+滚轮缩放，Ctrl+Z 撤销。导图里的修改保存到同一个 Markdown 文件，大纲同步显示。折叠状态两种视图共享，不会修改文件。每张便签记住上次使用的视图。
 
 ### 色调
 

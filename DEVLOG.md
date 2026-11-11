@@ -1,5 +1,15 @@
 # 开发日志
 
+## 2026-11-11 · v1.4.1 · 平滑缩放
+
+**原因**：setZoom 每次调用 render()，销毁并重建所有节点（还会重播淡入动画），且 CSS zoom 触发整页重新排版；滚轮每格固定 10%，没有缓动，也不以光标为中心。
+
+**实现**：缩放只修改画布的 transform: scale，外层 sizer 按缩放后尺寸撑开滚动区域；目标值逐帧以 0.32 系数缓动，并按锚点调整 scrollLeft/Top，使光标下的内容保持不动。滚轮增量按指数映射，触控板小增量对应小步长。缩放时临时加 will-change，结束 120ms 后移除以重新清晰栅格化。重新渲染时保留滚动位置，节点淡入只在首次打开时播放。
+
+**验证**：46 项测试通过，新增测试确认缩放分帧过渡、落在目标值、不重建节点、滚动区域随缩放更新。实际流畅度需在真实窗口确认。
+
+---
+
 ## 2026-11-11 · v1.4.0 · 导图编辑修复、标题栏标题、默认深色
 
 **反馈**：v1.3.0 安装后导图仍然无法编辑；文档没有可设置的标题；希望默认深色。
@@ -84,6 +94,14 @@
 ---
 
 ## English development log
+
+### 2026-11-11 · v1.4.1 · Smooth zoom
+
+**Cause.** setZoom called render(), destroying and rebuilding every node (replaying the fade-in), and CSS zoom forced a full relayout. Each wheel notch was a fixed 10% with no easing and no cursor anchor.
+
+**Implementation.** Zoom changes only the canvas transform: scale; an outer sizer grows the scroll area to the scaled size. The value eases toward the target each frame (factor 0.32) while scrollLeft/Top keep the point under the cursor fixed. Wheel deltas map exponentially, so small trackpad deltas give small steps. will-change is set only while zooming and removed 120ms after, so text re-rasterizes sharply. Re-renders keep the scroll position, and the node fade-in plays only on first open.
+
+**Validation.** 46 tests pass; a new test checks the zoom animates over frames, settles on target, does not rebuild nodes and resizes the scroll area. Smoothness in the real window still needs confirmation.
 
 ### 2026-11-11 · v1.4.0 · Map editing fix, title-bar title, dark default
 

@@ -49,7 +49,12 @@ button:disabled{opacity:.35;cursor:default}
 /* Mind map view: same note, laid out as branches. Drag nodes to move them, drag the background to pan. */
 #mindmap{position:absolute;inset:0;overflow:auto;outline:none;cursor:grab;user-select:none;background:radial-gradient(rgb(var(--tint)/.07) 1px,transparent 1px) 0 0/18px 18px}
 #mindmap.panning{cursor:grabbing}#mindmap.dragging,#mindmap.dragging .mm-node{cursor:grabbing}
-.mm-canvas{position:relative}
+.mm-sizer{position:relative;overflow:hidden}
+.mm-canvas{position:absolute;left:0;top:0;transform-origin:0 0}
+/* GPU-layer hint only while zooming; removed afterwards so text re-rasterizes sharply. */
+#mindmap.zooming .mm-canvas{will-change:transform}
+/* Nodes fade in when the map first opens, not on every edit or fold. */
+.mm-canvas.settled .mm-node{animation:none}
 .mm-links{position:absolute;inset:0;overflow:visible;pointer-events:none}
 .mm-links path{fill:none;stroke:rgb(var(--tint)/.28);stroke-width:1.4}
 .mm-node{position:absolute;height:28px;display:flex;align-items:center;gap:6px;padding:0 10px;font-size:13px;border:1px solid var(--line);background:var(--surface);border-radius:14px;cursor:default;animation:fade-in var(--t-fast) ease-out;transition:box-shadow var(--t-fast) ease,border-color var(--t-fast) ease,opacity var(--t-fast) ease}

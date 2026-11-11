@@ -260,7 +260,7 @@ document.addEventListener('keydown', e => {
   else if (key === 'b') { e.preventDefault(); e.stopPropagation(); format('bold'); }
   else if (key === 'm' && e.shiftKey) { e.preventDefault(); e.stopPropagation(); setView(view === 'mindmap' ? 'outline' : 'mindmap'); }
   else if (key === 'l' && e.shiftKey) { e.preventDefault(); e.stopPropagation(); toggleTheme(); }
-  else if (view === 'mindmap' && (key === '=' || key === '+' || key === '-' || key === '0')) { e.preventDefault(); if (mindmap) mindmap.setZoom(key === '0' ? 1 : mindmap.zoom + (key === '-' ? -.1 : .1)); }
+  else if (view === 'mindmap' && (key === '=' || key === '+' || key === '-' || key === '0')) { e.preventDefault(); if (mindmap) { if (key === '0') mindmap.setZoom(1); else mindmap.zoomBy(key === '-' ? 1 / 1.2 : 1.2); } }
 }, true);
 window.addEventListener('beforeunload', e => { if (!flush()) { e.preventDefault(); e.returnValue = false; } });
 window.addEventListener('blur', flush);

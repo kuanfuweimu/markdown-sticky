@@ -1,5 +1,11 @@
 # 更新日志
 
+## 1.4.1 — 2026-11-11
+
+### 修复
+
+- 导图缩放不流畅：以前每次缩放都重建整张导图并用 CSS zoom 重新排版。现在用 GPU 变换缩放、逐帧缓动，以鼠标位置为中心，触控板双指缩放连续跟手；缩放结束后文字重新清晰渲染。节点淡入只在首次打开导图时播放。
+
 ## 1.4.0 — 2026-11-11
 
 ### 新功能
@@ -70,6 +76,11 @@
 ---
 
 ## English changelog
+
+### 1.4.1 — 2026-11-11
+
+**Fixes**
+- Mind-map zoom was choppy: each step rebuilt the whole map and relaid it out with CSS zoom. Zoom now uses a GPU transform eased per frame, anchored at the cursor, with continuous trackpad pinch; text re-sharpens when zooming stops. Node fade-in plays only when the map first opens.
 
 ### 1.4.0 — 2026-11-11
 

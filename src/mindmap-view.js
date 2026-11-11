@@ -57,13 +57,53 @@ export class MindmapView {
     });
     this.lastClick = { pos: undefined, at: 0 };
     host.addEventListener('keydown', e => this.key(e));
-    host.addEventListener('wheel', e => { if (e.ctrlKey) { e.preventDefault(); this.setZoom(this.zoom * (e.deltaY < 0 ? 1.1 : 1 / 1.1)); } }, { passive: false });
+    // Ctrl+wheel and trackpad pinch (which Chromium reports as Ctrl+wheel) zoom toward the cursor.
+    // Small trackpad deltas give small steps, so pinching feels continuous rather than notched.
+    host.addEventListener('wheel', e => {
+      if (!e.ctrlKey) return;
+      e.preventDefault();
+      const delta = e.deltaMode === 1 ? e.deltaY * 33 : e.deltaY;
+      this.zoomTo(this.targetZoom * Math.exp(-Math.max(-60, Math.min(60, delta)) * .0035), e.clientX, e.clientY);
+    }, { passive: false });
+    this.targetZoom = 1; this.zoomFrame = 0;
   }
   get editor() { return this.getEditor(); }
   posOf(el) { return el.dataset.key === 'root' ? null : Number(el.dataset.key); }
   elFor(pos) { return this.host.querySelector(`.mm-node[data-key="${keyOf(pos)}"]`); }
   current() { return this.nodes.find(it => it.n.pos === this.selected) || this.nodes[0]; }
-  setZoom(z) { this.zoom = Math.max(.4, Math.min(2.5, Math.round(z * 100) / 100)); this.render(); }
+  // Zoom never rebuilds the map: it scales the canvas on the GPU and resizes a spacer so scrollbars stay right,
+  // easing toward the target each frame while keeping the point under the cursor fixed.
+  setZoom(z) { this.zoomTo(z); }
+  zoomBy(factor) { this.zoomTo(this.targetZoom * factor); }
+  zoomTo(z, clientX, clientY) {
+    this.targetZoom = Math.max(.3, Math.min(3, z));
+    const box = this.host.getBoundingClientRect();
+    this.anchor = clientX == null ? { x: this.host.clientWidth / 2, y: this.host.clientHeight / 2 } : { x: clientX - box.left, y: clientY - box.top };
+    const reduce = !!this.host.ownerDocument.defaultView?.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    if (reduce) { this.applyZoom(this.targetZoom); return; }
+    if (!this.zoomFrame) { this.host.classList.add('zooming'); this.zoomFrame = requestAnimationFrame(() => this.zoomStep()); }
+  }
+  zoomStep() {
+    const diff = this.targetZoom - this.zoom;
+    const next = Math.abs(diff) < .002 ? this.targetZoom : this.zoom + diff * .32;
+    this.applyZoom(next);
+    if (next !== this.targetZoom) this.zoomFrame = requestAnimationFrame(() => this.zoomStep());
+    else {
+      this.zoomFrame = 0;
+      // Dropping will-change lets Chromium re-rasterize text crisply at the final scale.
+      clearTimeout(this.sharpTimer); this.sharpTimer = setTimeout(() => { if (!this.zoomFrame) this.host.classList.remove('zooming'); }, 120);
+    }
+  }
+  applyZoom(z) {
+    const old = this.zoom, h = this.host, a = this.anchor || { x: 0, y: 0 };
+    const cx = (h.scrollLeft + a.x) / old, cy = (h.scrollTop + a.y) / old;
+    this.zoom = z;
+    if (this.canvas) {
+      this.canvas.style.transform = `scale(${z})`;
+      this.sizer.style.width = this.size.width * z + 'px'; this.sizer.style.height = this.size.height * z + 'px';
+    }
+    h.scrollLeft = cx * z - a.x; h.scrollTop = cy * z - a.y;
+  }
 
   render() {
     if (this.editing) { this.stale = true; return; }
@@ -75,8 +115,12 @@ export class MindmapView {
     this.nodes = nodes;
     if (!nodes.some(it => it.n.pos === this.selected)) this.selected = null;
     const d = this.host.ownerDocument, ro = this.readOnly();
-    const canvas = d.createElement('div'); canvas.className = 'mm-canvas';
-    canvas.style.cssText = `width:${width}px;height:${height}px;zoom:${this.zoom}`;
+    const canvas = d.createElement('div'); canvas.className = 'mm-canvas' + (this.canvas ? ' settled' : '');
+    canvas.style.cssText = `width:${width}px;height:${height}px;transform:scale(${this.zoom})`;
+    const sizer = d.createElement('div'); sizer.className = 'mm-sizer';
+    sizer.style.cssText = `width:${width * this.zoom}px;height:${height * this.zoom}px`;
+    sizer.append(canvas);
+    Object.assign(this, { canvas, sizer, size: { width, height } });
     const svg = d.createElementNS(SVG, 'svg'); svg.setAttribute('width', width); svg.setAttribute('height', height); svg.setAttribute('class', 'mm-links');
     for (const it of nodes) {
       if (!it.parent) continue;
@@ -108,7 +152,9 @@ export class MindmapView {
       }
       canvas.append(el);
     });
-    this.host.replaceChildren(canvas);
+    const scroll = { left: this.host.scrollLeft, top: this.host.scrollTop };
+    this.host.replaceChildren(sizer);
+    this.host.scrollLeft = scroll.left; this.host.scrollTop = scroll.top;
     this.host.classList.toggle('readonly', ro);
     this.reveal();
   }

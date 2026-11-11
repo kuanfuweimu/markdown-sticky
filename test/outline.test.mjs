@@ -260,3 +260,21 @@ test('mind map: toolbar buttons, click-twice and type-to-edit all edit nodes', a
   assert.deepEqual(labels(), ['计划', '学习', '周报 v2']);
   w.close();
 });
+
+test('mind map zoom eases with a GPU transform and never rebuilds the nodes', async () => {
+  const { w, d, map, nodeEl, tick } = await openMap('# 计划\n\n- 工作\n- 生活');
+  d.getElementById('viewToggle').click(); await tick();
+  const before = nodeEl('工作'), canvas = d.querySelector('.mm-canvas');
+  map.dispatchEvent(new w.WheelEvent('wheel', { deltaY: -100, ctrlKey: true, bubbles: true, cancelable: true, clientX: 50, clientY: 50 }));
+  await tick(40);
+  const mid = parseFloat(canvas.style.transform.match(/scale\(([\d.]+)\)/)[1]);
+  assert.ok(mid > 1 && mid < 1.42, 'zoom animates in steps, mid=' + mid);
+  await tick(600);
+  const end = parseFloat(canvas.style.transform.match(/scale\(([\d.]+)\)/)[1]);
+  assert.ok(Math.abs(end - Math.exp(60 * .0035)) < .01, 'settles on target, end=' + end);
+  assert.equal(nodeEl('工作'), before, 'same DOM node: zoom does not re-render');
+  assert.equal(d.querySelector('.mm-sizer').style.width, parseFloat(canvas.style.width) * end + 'px');
+  d.dispatchEvent(new w.KeyboardEvent('keydown', { key: '0', ctrlKey: true, bubbles: true })); await tick(600);
+  assert.match(canvas.style.transform, /scale\(1\)/);
+  w.close();
+});

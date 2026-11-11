@@ -1,5 +1,15 @@
 # 开发日志
 
+## 2026-11-11 · v1.4.2 · 关不掉窗口
+
+**原因**：关闭按钮和 beforeunload 都要求 flush() 返回 true。flush 在 view.composing 为真时直接返回 false 并排队重试，这个检查在 dirty 判断之前，所以即使没有未保存内容，只要输入法处于组合状态就拒绝关闭。主进程 fadeClose 淡出后，beforeunload 取消关闭，400ms 后窗口淡入回来，看起来像关不掉。导图节点编辑中关闭时，输入框内容也不会保存。
+
+**实现**：flush(force) 在关闭、归档和卸载时忽略组合状态，取编辑器当前 Markdown 保存。新增 prepareClose() 先提交导图中的节点编辑再强制保存；仅当磁盘保存真正失败时阻止关闭并抖动状态栏。普通自动保存仍等待组合结束，避免打断输入。
+
+**验证**：47 项测试通过；新增测试模拟导图编辑中关闭和输入法卡在组合状态时关闭，均能保存并关闭。真实窗口仍需用户确认。
+
+---
+
 ## 2026-11-11 · v1.4.1 · 平滑缩放
 
 **原因**：setZoom 每次调用 render()，销毁并重建所有节点（还会重播淡入动画），且 CSS zoom 触发整页重新排版；滚轮每格固定 10%，没有缓动，也不以光标为中心。
@@ -94,6 +104,14 @@
 ---
 
 ## English development log
+
+### 2026-11-11 · v1.4.2 · Window would not close
+
+**Cause.** The close button and beforeunload both required flush() to return true. flush returned false whenever view.composing was true, and checked that before dirty, so an active IME composition refused to close even with nothing unsaved. After fadeClose faded the window out, beforeunload cancelled the close and the window faded back in 400ms later, looking stuck. Closing during a map label edit also dropped the typed text.
+
+**Implementation.** flush(force) ignores composition on close, archive and unload and saves the editor's current Markdown. A new prepareClose() commits any map label edit, then force-saves; only a real disk save failure blocks closing, with a status shake. Regular autosave still waits for composition to end so typing is not interrupted.
+
+**Validation.** 47 tests pass, including closing during a map edit and with a stuck IME composition; both save and close. Real-window behaviour still needs user confirmation.
 
 ### 2026-11-11 · v1.4.1 · Smooth zoom
 

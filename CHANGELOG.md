@@ -1,5 +1,11 @@
 # 更新日志
 
+## 1.4.2 — 2026-11-11
+
+### 修复
+
+- 窗口有时点 × 关不掉：输入法处于组合状态（中文输入时常见，失去焦点后可能卡住）时，保存会一直等待，关闭被取消，窗口淡出后又弹回来。现在关闭时直接保存当前显示的文字并关闭；导图中正在编辑的节点也会先保存。只有真正的保存错误才会阻止关闭，并在状态栏提示。
+
 ## 1.4.1 — 2026-11-11
 
 ### 修复
@@ -76,6 +82,11 @@
 ---
 
 ## English changelog
+
+### 1.4.2 — 2026-11-11
+
+**Fixes**
+- The × button sometimes failed to close a window: during an IME composition (common with Chinese input, and it can stick after focus is lost) saving waited indefinitely, the close was cancelled and the window faded back in. Closing now saves the text as shown and closes; an open mind-map label edit is committed first. Only a real save error keeps the window open, with a status message.
 
 ### 1.4.1 — 2026-11-11
 

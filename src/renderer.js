@@ -58,10 +58,16 @@ function toggleTheme() {
 let toneTimer;
 function saveTone(delay) { clearTimeout(toneTimer); toneTimer = setTimeout(() => api.meta({ tone: note.tone }).catch(report), delay); }
 function changed(md) { content = md; dirty = true; editVersion++; status('Saving…'); clearTimeout(saveTimer); saveTimer = setTimeout(flush, 350); }
-function flush() {
+// `force` is for closing and leaving: an IME composition (sometimes stuck after the window loses focus) must not
+// block the save, so the text as currently shown is saved instead of waiting for the composition to end.
+function flush(force = false) {
   clearTimeout(saveTimer);
+  if (rich?.view.composing) {
+    if (!force) { saveTimer = setTimeout(flush, 350); return false; }
+    const md = rich.getMarkdown();
+    if (md !== content) { content = md; dirty = true; }
+  }
   if (!dirty) return true;
-  if (rich?.view.composing) { saveTimer = setTimeout(flush, 350); return false; }
   const result = api.save(content, note.revision);
   if (result.ok) {
     dirty = false; editVersion++;
@@ -202,14 +208,16 @@ bind('pin', async () => {
 bind('minimize', () => api.minimize());
 bind('viewToggle', () => setView(view === 'mindmap' ? 'outline' : 'mindmap'));
 bind('theme', toggleTheme);
-bind('close', () => { if (flush()) return api.close(); });
+// Closing finishes any open map label edit and saves whatever is on screen; only a real save error keeps the window open.
+function prepareClose() { if (mindmap?.editing) mindmap.finishEdit(true, null, false); return flush(true); }
+bind('close', () => { if (prepareClose()) return api.close(); shake($('status')); });
 bind('more', () => isOpen($('menu')) ? dismiss($('menu')) : reveal($('menu')));
 bind('library', async () => { if (!flush()) return; dismiss($('menu')); await refreshList(true); reveal($('drawer')); $('search').focus(); });
 bind('drawerClose', () => dismiss($('drawer')));
 bind('folder', () => api.folder());
 bind('import', () => api.import());
 bind('export', async () => { if (flush() && await api.export()) status('Exported .md file'); });
-bind('archive', () => { if (flush()) return api.archive(); });
+bind('archive', () => { if (prepareClose()) return api.archive(); });
 bind('help', () => { dismiss($('menu')); $('helpDialog').showModal(); });
 bind('helpClose', closeHelp);
 $('helpDialog').addEventListener('cancel', e => { e.preventDefault(); closeHelp(); });
@@ -262,7 +270,7 @@ document.addEventListener('keydown', e => {
   else if (key === 'l' && e.shiftKey) { e.preventDefault(); e.stopPropagation(); toggleTheme(); }
   else if (view === 'mindmap' && (key === '=' || key === '+' || key === '-' || key === '0')) { e.preventDefault(); if (mindmap) { if (key === '0') mindmap.setZoom(1); else mindmap.zoomBy(key === '-' ? 1 / 1.2 : 1.2); } }
 }, true);
-window.addEventListener('beforeunload', e => { if (!flush()) { e.preventDefault(); e.returnValue = false; } });
+window.addEventListener('beforeunload', e => { if (!prepareClose()) { e.preventDefault(); e.returnValue = false; } });
 window.addEventListener('blur', flush);
 window.addEventListener('focus', synchronize);
 document.addEventListener('compositionend', () => { if (!dirty) synchronize(); });

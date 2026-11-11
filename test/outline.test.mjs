@@ -278,3 +278,26 @@ test('mind map zoom eases with a GPU transform and never rebuilds the nodes', as
   assert.match(canvas.style.transform, /scale\(1\)/);
   w.close();
 });
+
+test('close always saves and closes, even mid-IME composition or mid map edit', async () => {
+  const { w, d, saved, nodeEl, press, key, tick } = await openMap('# 计划\n\n- 工作');
+  let closes = 0; w.notes.close = async () => { closes++; };
+  const pm = d.querySelector('.tiptap').pmViewDesc?.view;
+  d.getElementById('viewToggle').click(); await tick();
+  press(nodeEl('工作')); key('F2'); await tick();
+  d.querySelector('.mm-input').value = '学习';
+  d.getElementById('close').click(); await tick();
+  assert.equal(closes, 1, 'map edit does not block closing');
+  assert.equal(saved.at(-1).trim(), '# 计划\n\n- 学习', 'open map edit is saved on close');
+  d.getElementById('viewToggle').click(); await tick();
+  const view = pm || d.querySelector('.tiptap').editor?.view;
+  assert.ok(view, 'editor view reachable for the IME check');
+  {
+    Object.defineProperty(view, 'composing', { get: () => true, configurable: true });
+    d.getElementById('docTitle').value = '新标题'; d.getElementById('docTitle').dispatchEvent(new w.Event('input'));
+    d.getElementById('close').click(); await tick();
+    assert.equal(closes, 2, 'stuck IME composition does not block closing');
+    assert.match(saved.at(-1), /^# 新标题/);
+  }
+  w.close();
+});

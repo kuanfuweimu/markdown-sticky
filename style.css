@@ -25,6 +25,34 @@ button:disabled{opacity:.35;cursor:default}
 .prose h1{font-size:26px;line-height:1.3;margin:3px 0 18px;font-weight:650;letter-spacing:-.4px}
 .prose h2{font-size:19px;line-height:1.4;margin:25px 0 12px;font-weight:650}
 .prose h3{font-size:16px;margin:18px 0 9px}.prose h4,.prose h5,.prose h6{font-size:15px}
+/* Each heading level steps down a clear notch so outline depth reads at a glance; deep levels stay bold but body-sized. */
+.prose h3{font-size:17px;font-weight:650;line-height:1.45}.prose h4{font-size:15.5px;font-weight:650;margin:16px 0 8px}.prose h5{font-size:15px;font-weight:600;margin:14px 0 6px}.prose h6{font-size:14px;font-weight:600;color:var(--muted);margin:12px 0 6px}
+/* Outline folding. The toggle sits in the left gutter so text stays aligned with or without it. */
+.prose h1,.prose h2,.prose h3,.prose h4,.prose h5,.prose h6,.prose li.outline-parent{position:relative}
+.fold-toggle{position:absolute;left:-21px;top:.5em;width:18px;height:18px;padding:0;margin-top:-9px;display:flex;align-items:center;justify-content:center;border-radius:4px;color:var(--muted);opacity:0;transition:opacity var(--t-fast) ease,background-color var(--t-fast) ease,transform var(--t-base) var(--ease-out);transform:rotate(90deg);user-select:none}
+.prose h1>.fold-toggle,.prose h2>.fold-toggle,.prose h3>.fold-toggle,.prose h4>.fold-toggle,.prose h5>.fold-toggle,.prose h6>.fold-toggle{top:.68em}
+.prose li.outline-parent>p>.fold-toggle{left:-37px;top:.9em}
+.prose ul[data-type=taskList] li.outline-parent>div>p>.fold-toggle{left:-21px;top:.9em}
+.fold-toggle svg{width:10px;height:10px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.prose :is(h1,h2,h3,h4,h5,h6,li):hover>.fold-toggle,.prose li:hover>p>.fold-toggle,.prose li:hover>div>p>.fold-toggle,.fold-toggle[aria-expanded=false]{opacity:1}
+.fold-toggle[aria-expanded=false]{transform:none}
+.fold-toggle:hover{background:var(--hover);color:var(--ink)}
+.prose li.outline-parent.folded>ul,.prose li.outline-parent.folded>ol,.prose li.outline-parent.folded>div>ul,.prose li.outline-parent.folded>div>ol,.prose .fold-hidden{display:none}
+/* A folded branch shows a quiet marker so hidden content is never mistaken for deleted content. */
+.prose li.outline-parent.folded>p:after,.prose li.outline-parent.folded>div>p:after,.prose :is(h1,h2,h3,h4,h5,h6).folded:after{content:"…";margin-left:6px;padding:0 6px;border-radius:8px;background:var(--hover);color:var(--muted);font-weight:400;font-size:13px}
+.prose{padding-left:34px}
+/* Mind map view: same note, laid out as branches. */
+#mindmap{position:absolute;inset:0;overflow:auto;outline:none;background:radial-gradient(rgb(var(--tint)/.07) 1px,transparent 1px) 0 0/18px 18px}
+.mm-canvas{position:relative;transform-origin:0 0}
+.mm-links{position:absolute;inset:0;overflow:visible;pointer-events:none}
+.mm-links path{fill:none;stroke:rgb(var(--tint)/.28);stroke-width:1.4}
+.mm-node{position:absolute;height:26px;padding:0 10px;text-align:left;font-size:13px;line-height:24px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border:1px solid var(--line);background:var(--surface);border-radius:13px;cursor:default;animation:card-in var(--t-base) var(--ease-out) backwards;animation-delay:calc(var(--i) * 8ms)}
+.mm-node.branch{cursor:pointer;font-weight:550}
+.mm-node.root{height:30px;margin-top:-2px;line-height:28px;font-size:15px;font-weight:650;background:var(--ink);color:var(--paper);border-color:var(--ink);border-radius:8px}
+.mm-node.root:hover{background:var(--ink);opacity:.9}
+.mm-node.done{opacity:.5;text-decoration:line-through}
+.mm-node.collapsed{border-style:dashed;padding-right:30px}
+.mm-count{position:absolute;right:5px;top:4px;min-width:18px;height:16px;padding:0 4px;border-radius:8px;background:var(--press);font-size:10px;line-height:16px;text-align:center;font-weight:600}
 .prose ul,.prose ol{padding-left:24px;margin:9px 0 17px}.prose li{padding-left:2px;margin:4px 0}.prose li p{margin:0}.prose li ul,.prose li ol{margin:5px 0}
 .prose ul[data-type=taskList]{list-style:none;padding-left:0}
 .prose ul[data-type=taskList] li{display:flex;gap:9px;align-items:flex-start}
@@ -69,7 +97,7 @@ dialog button{padding:8px 16px;background:var(--ink);color:var(--paper)}
 dialog button:hover{background:var(--ink);opacity:.85}
 dialog::backdrop{background:rgb(0 0 0/.25)}
 ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-thumb{background:rgb(var(--tint)/.18);border-radius:5px}
-@media(max-width:380px){.toolbar{padding:5px 8px;gap:0}.toolbar button{padding:5px}#hint{display:none}.prose{padding-left:19px;padding-right:19px}}
+@media(max-width:380px){.toolbar{padding:5px 8px;gap:0}.toolbar button{padding:5px}#hint{display:none}.prose{padding-left:31px;padding-right:19px}}
 
 /* Motion: macOS-style curves and durations. Enter eases out quickly, exit eases in and is shorter. */
 :root{--ease-out:cubic-bezier(.2,.9,.25,1);--ease-in:cubic-bezier(.45,0,.8,.3);--ease-spring:cubic-bezier(.34,1.5,.6,1);--t-fast:140ms;--t-base:220ms;--t-slow:320ms}

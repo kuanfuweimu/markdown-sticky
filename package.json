@@ -1,6 +1,6 @@
 {
   "name": "markdown-sticky",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Local Markdown sticky notes for Windows",
   "author": "Kuanfu Weimu",
   "private": true,
@@ -27,7 +27,12 @@
       "dist/**/*",
       "assets/**/*"
     ],
-    "extraResources": [{ "from": "assets/icon.ico", "to": "icon.ico" }],
+    "extraResources": [
+      {
+        "from": "assets/icon.ico",
+        "to": "icon.ico"
+      }
+    ],
     "win": {
       "target": "dir",
       "signAndEditExecutable": true,

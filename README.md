@@ -18,6 +18,17 @@ Open **Markdown Sticky** from the Start menu, or double-click `win-unpacked/Mark
 | Bold | Ctrl+B |
 | Undo / redo | Ctrl+Z / Ctrl+Shift+Z |
 | Leave the editor | Esc, then Tab |
+| Fold / open branch at caret | Ctrl+↑ / Ctrl+↓ |
+| Fold / open everything | Ctrl+Shift+↑ / Ctrl+Shift+↓ |
+| Heading down / up a level | Tab / Shift+Tab on a heading |
+| Outline ↔ mind map | Ctrl+Shift+M |
+| Zoom mind map | Ctrl+= / Ctrl+− / Ctrl+0 |
+
+## Outline and mind map
+
+Every note is a foldable outline, in the spirit of outliner apps. Headings fold their whole section and list items with children fold their sub-list, from the arrow that appears in the left gutter. Folded branches show a … marker. The **H** button picks the heading size for you: the first heading becomes the title (H1), later ones match the section above; Tab / Shift+Tab move a heading down or up a level.
+
+The map button next to ⋯ (or Ctrl+Shift+M) switches the same note to a mind map: the opening H1 is the root, headings branch by level and list items by indentation. Click a branch to fold it, double-click any node to jump to it in the outline. Folds are shared by both views, are kept while the window stays open, and never change the Markdown file. Each note remembers which view it was last in.
 
 ## Tone
 
@@ -69,6 +80,17 @@ Node.js 24+: `npm ci` → `npm run build` → `npm test`. `npm run icon` regener
 | 加粗 | Ctrl+B |
 | 撤销 / 重做 | Ctrl+Z / Ctrl+Shift+Z |
 | 离开编辑器 | Esc，再按 Tab |
+| 折叠 / 展开光标所在分支 | Ctrl+↑ / Ctrl+↓ |
+| 全部折叠 / 全部展开 | Ctrl+Shift+↑ / Ctrl+Shift+↓ |
+| 标题降级 / 升级 | 在标题上按 Tab / Shift+Tab |
+| 大纲 ↔ 思维导图 | Ctrl+Shift+M |
+| 缩放思维导图 | Ctrl+= / Ctrl+− / Ctrl+0 |
+
+### 大纲与思维导图
+
+每张便签都是可折叠大纲，类似幕布。标题折叠整个章节，带子项的列表项折叠其子列表，点击左侧出现的箭头即可；折叠后显示 … 标记。**H** 按钮自动决定标题大小：第一个标题为主标题（H1），之后的标题跟随上方章节层级；在标题上按 Tab / Shift+Tab 降级或升级。
+
+⋯ 左边的导图按钮（或 Ctrl+Shift+M）把同一张便签切换成思维导图：开头的 H1 为中心，标题按层级分支，列表按缩进分支。单击分支折叠，双击节点跳回大纲编辑。两种视图共享折叠状态，窗口打开期间保留，且不会修改 Markdown 文件。每张便签记住上次使用的视图。
 
 ### 色调
 

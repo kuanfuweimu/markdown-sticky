@@ -1,5 +1,18 @@
 # 更新日志
 
+## 1.1.0 — 2026-11-11
+
+### 新功能
+
+- 幕布式可折叠大纲：标题折叠整个章节，带子项的列表项折叠子列表；Ctrl+↑/↓ 折叠或展开光标处分支，加 Shift 作用于全部。光标移入折叠内容时自动展开。
+- 标题大小自动：H 按钮按上下文选择层级（首个标题为 H1，其余跟随上方章节），Tab / Shift+Tab 在标题上降级/升级；H3–H6 字号层次更清晰。
+- 一键思维导图视图（导图按钮或 Ctrl+Shift+M）：H1 为中心，标题与列表分支展开；单击折叠，双击跳回大纲，Ctrl+= / − / 0 缩放。两种视图共享折叠状态，每张便签记住上次视图。
+- 折叠与视图切换只改变显示，不改写 Markdown 文件。
+
+### 维护
+
+- 新增 10 项大纲与导图测试，共 33 项通过。
+
 ## 1.0.1 — 2026-10-31
 
 ### 修复
@@ -24,6 +37,17 @@
 ---
 
 ## English changelog
+
+### 1.1.0 — 2026-11-11
+
+**Features**
+- Outliner-style folding: headings fold their section, list items with children fold their sub-list. Ctrl+Up/Down fold or open the branch at the caret, with Shift for everything. Moving the caret into folded content opens it.
+- Automatic heading size: the H button picks the level from context (first heading H1, later ones match the section above); Tab / Shift+Tab on a heading moves it down / up a level. H3–H6 sizes now step down clearly.
+- One-click mind map view (map button or Ctrl+Shift+M): the H1 is the root, headings and lists branch out. Click to fold, double-click to jump back to the outline, Ctrl+= / − / 0 to zoom. Both views share folds; each note remembers its last view.
+- Folding and switching views only change the display and never rewrite the Markdown file.
+
+**Maintenance**
+- Added 10 outline and mind-map tests; all 33 pass.
 
 ### 1.0.1 — 2026-10-31
 

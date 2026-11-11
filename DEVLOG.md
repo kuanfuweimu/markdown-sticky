@@ -1,5 +1,24 @@
 # 开发日志
 
+## 2026-11-11 · v1.1.0 · 可折叠大纲与思维导图
+
+**需求**：所有标题与列表默认可折叠、标题大小自动，类似幕布；并可一键切换思维导图视图。
+
+**实现**
+
+- 新增 ProseMirror 插件 src/outline.js：扫描可折叠块（有内容的顶层标题章节、含子列表的列表项），用节点装饰隐藏内容，用小部件放置折叠箭头。折叠状态只存于编辑器插件状态并随编辑映射位置，不进入文档，因此 Markdown 不变、不会触发保存。
+- 折叠时把光标移到分支标题；其他操作把光标移入隐藏内容时自动展开，避免在看不见的位置输入。
+- H 按钮按上方最近标题决定层级；Tab / Shift+Tab 作用于标题时调整层级，与列表缩进一致。
+- src/mindmap.js 从同一文档生成树（H1 为根，标题按层级、列表按缩进）；src/mindmap-view.js 以列宽 + 叶行布局绘制 SVG 连线与按钮节点。导图节点携带文档位置，单击调用同一折叠命令，双击回到大纲并定位。
+- 视图偏好以 view 元数据保存在 index.json；store 仅接受 outline/mindmap。
+- Electron 默认菜单把 Ctrl+M 绑定为最小化，所以视图切换使用 Ctrl+Shift+M。
+
+**验证**：33 项测试（新增 10 项）覆盖折叠检测、折叠不改 Markdown、点击箭头、光标自动展开、编辑后位置映射、自动标题层级、导图树与布局、渲染层视图切换与共享折叠、视图记忆，以及等待自动保存周期后无写入。测试使用 jsdom，没有接管用户屏幕；Electron 窗口中的实际视觉效果尚待用户在应用内确认。
+
+**限制**：折叠状态在窗口关闭后不保留；导图为浏览/导航视图，编辑在大纲中完成；含表格/图片的只读便签同样可折叠与查看导图。
+
+---
+
 ## 2026-10-31 · v1.0.1 · 运行期间同步外部便签
 
 **问题与复现**
@@ -30,6 +49,22 @@
 ---
 
 ## English development log
+
+### 2026-11-11 · v1.1.0 · Foldable outline and mind map
+
+**Request.** Make every heading and list foldable with automatic heading sizes, like an outliner, plus a one-click mind map view.
+
+**Implementation**
+- A ProseMirror plugin (src/outline.js) finds foldable blocks (top-level heading sections with content, list items with nested lists), hides content with node decorations and places toggles as widgets. Fold state lives in plugin state and maps through edits; it never enters the document, so the Markdown is unchanged and no save is triggered.
+- Folding moves the caret to the branch title; any other move into hidden content unfolds it so typing never lands somewhere invisible.
+- The H button picks the level from the nearest heading above; Tab / Shift+Tab on a heading changes its level, matching list indentation.
+- src/mindmap.js builds a tree from the same document; src/mindmap-view.js lays it out by column width and leaf rows with SVG links. Map nodes carry document positions, so click uses the same fold command and double-click returns to the outline at that block.
+- The view preference is stored as view metadata in index.json; the store accepts only outline/mindmap.
+- Electron's default menu binds Ctrl+M to Minimize, so the view toggle uses Ctrl+Shift+M.
+
+**Validation.** 33 tests (10 new) cover fold detection, Markdown unchanged by folding, toggle clicks, caret auto-unfold, position mapping after edits, automatic heading level, mind-map tree and layout, renderer view switching with shared folds, remembered view, and no write after the autosave interval. Tests use jsdom, not the user's screen; the look inside the Electron window still needs confirmation in the app.
+
+**Limitations.** Folds are not kept after a window closes. The mind map is a viewing/navigation view; editing happens in the outline. Read-only notes with tables or images can also fold and show the map.
 
 ### 2026-10-31 · v1.0.1 · Sync external notes while running
 

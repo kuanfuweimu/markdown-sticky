@@ -114,6 +114,7 @@ class NoteStore {
     if (Number.isFinite(patch.tone)) this.meta[id].tone = Math.max(0, Math.min(100, Math.round(patch.tone)));
     if (['source', 'rich'].includes(patch.mode)) this.meta[id].mode = patch.mode;
     if (typeof patch.pinned === 'boolean') this.meta[id].pinned = patch.pinned;
+    if (['outline', 'mindmap'].includes(patch.view)) this.meta[id].view = patch.view;
     if (typeof patch.archived === 'boolean') this.meta[id].archived = patch.archived;
     if (patch.bounds && ['x','y','width','height'].every(k => Number.isFinite(patch.bounds[k]))) this.meta[id].bounds = patch.bounds;
     this.commit(); return this.meta[id];

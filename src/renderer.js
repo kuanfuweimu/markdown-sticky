@@ -1,10 +1,13 @@
 import { Editor } from '@tiptap/core';
 import { richExtensions, requiresSource } from './editors.js';
 import { clampTone, palette } from './tone.js';
+import { autoHeadingLevel, getFolds, setFolds, toggleFold, outlineKey } from './outline.js';
+import { renderMindmap } from './mindmap-view.js';
 
 const $ = id => document.getElementById(id);
 let note, rich, content = '', dirty = false, saveTimer, list = [], escapeTab = false, readOnly = false;
 let editVersion = 0, syncing = false, syncAgain = false, applyingFile = false, unsubscribe;
+let view = 'outline', zoom = 1, mapFrame = 0;
 const api = window.notes;
 const EASE_OUT = 'cubic-bezier(.2,.9,.25,1)';
 const reducedMotion = () => !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
@@ -63,16 +66,57 @@ function flush() {
 function renderEditor(focus = true) {
   // The editor cannot round-trip tables, images or HTML, so such notes are shown read-only to keep the file intact.
   readOnly = requiresSource(content);
-  document.querySelectorAll('[data-format]').forEach(b => b.disabled = readOnly);
-  $('hint').textContent = readOnly ? 'Has tables, images or HTML: read-only to keep it intact' : 'Tab to indent · Enter continues lists';
   applyingFile = true;
   try {
     rich = new Editor({ element: $('rich'), extensions: richExtensions(), content, contentType: 'markdown', editable: !readOnly,
       editorProps: { attributes: { 'aria-label': 'Note', spellcheck: 'false' } },
       onUpdate: ({ editor, transaction }) => { if (!applyingFile && transaction.docChanged) changed(editor.getMarkdown()); },
+      onTransaction: ({ transaction }) => { if (view === 'mindmap' && (transaction.docChanged || transaction.getMeta(outlineKey))) scheduleMap(); },
     });
-    if (focus && !readOnly) rich.commands.focus('end');
+    if (focus && !readOnly && view === 'outline') rich.commands.focus('end');
   } finally { applyingFile = false; }
+  updateChrome();
+  if (view === 'mindmap') drawMindmap();
+}
+function updateChrome() {
+  const map = view === 'mindmap';
+  document.querySelectorAll('[data-format]').forEach(b => b.disabled = readOnly || map);
+  $('viewToggle').setAttribute('aria-pressed', String(map)); $('viewToggle').classList.toggle('active', map);
+  $('viewToggle').title = map ? 'Back to outline · Ctrl+Shift+M' : 'Mind map · Ctrl+Shift+M';
+  $('hint').textContent = map ? 'Click a branch to fold · Double-click to edit'
+    : readOnly ? 'Has tables, images or HTML: read-only to keep it intact' : 'Tab to indent · Ctrl+↑/↓ to fold';
+}
+function scheduleMap() { if (!mapFrame) mapFrame = requestAnimationFrame(() => { mapFrame = 0; if (view === 'mindmap') drawMindmap(); }); }
+function drawMindmap() {
+  if (!rich) return;
+  const { folded, items } = outlineKey.getState(rich.state);
+  renderMindmap($('mindmap'), rich.state.doc, {
+    title: 'Untitled', folded, zoom, foldable: new Set(items.map(i => i.pos)),
+    onToggle: pos => toggleFold(rich, pos),
+    onOpen: pos => setView('outline', pos),
+  });
+}
+// Switching views keeps one editor and one fold state, so the outline and the map always show the same branches.
+function setView(next, pos) {
+  if (!rich) return;
+  if (next === view && pos == null) return;
+  view = next;
+  const map = view === 'mindmap';
+  $('mindmap').hidden = !map; $('rich').hidden = map;
+  updateChrome();
+  play(map ? $('mindmap') : $('rich'), [{ opacity: 0, transform: 'scale(.985)' }, { opacity: 1, transform: 'none' }], { duration: 220, easing: EASE_OUT });
+  if (map) { drawMindmap(); $('mindmap').focus({ preventScroll: true }); }
+  else {
+    $('mindmap').replaceChildren();
+    if (pos != null) {
+      const limit = rich.state.doc.content.size;
+      rich.commands.setTextSelection(Math.min(pos + 1, limit));
+      // Moving the caret into a folded branch opens it; scroll after the decorations update.
+      requestAnimationFrame(() => rich.commands.scrollIntoView());
+    }
+    if (!readOnly) rich.commands.focus(undefined, { scrollIntoView: pos != null });
+  }
+  if (note) api.meta?.({ view })?.catch?.(report);
 }
 async function synchronize() {
   if (!note) return;
@@ -89,9 +133,12 @@ async function synchronize() {
       if (dirty || rich?.view.composing || version !== editVersion || id !== note.id) continue;
       if (latest.content !== content) {
         const focused = rich.isFocused, selection = rich.state.selection, scroll = $('editorArea').scrollTop;
+        // Keep folds whose position still starts a foldable block after an external edit.
+        const folds = getFolds(rich.state);
         rich.destroy(); $('rich').replaceChildren();
         content = latest.content; note = latest;
         renderEditor(false);
+        setFolds(rich, folds);
         if (focused && !readOnly) {
           const limit = rich.state.doc.content.size;
           rich.commands.setTextSelection({ from: Math.min(selection.from, limit), to: Math.min(selection.to, limit) });
@@ -113,9 +160,9 @@ async function closeHelp() {
   dialog.classList.remove('leaving'); dialog.close();
 }
 function format(kind) {
-  if (!rich || readOnly) { shake($('editorArea')); return; }
+  if (!rich || readOnly || view === 'mindmap') { shake($('editorArea')); return; }
   const chain = rich.chain().focus();
-  ({ heading: () => chain.toggleHeading({ level: 2 }).run(), bold: () => chain.toggleBold().run(), bullet: () => chain.toggleBulletList().run(), ordered: () => chain.toggleOrderedList().run(), task: () => chain.toggleTaskList().run() })[kind]();
+  ({ heading: () => rich.isActive('heading') ? chain.setParagraph().run() : chain.setHeading({ level: autoHeadingLevel(rich.state) }).run(), bold: () => chain.toggleBold().run(), bullet: () => chain.toggleBulletList().run(), ordered: () => chain.toggleOrderedList().run(), task: () => chain.toggleTaskList().run() })[kind]();
 }
 async function refreshList(animate = false) { list = await api.list(); drawList(animate); }
 function drawList(animate = false) {
@@ -140,6 +187,7 @@ bind('pin', async () => {
   play($('pin').firstElementChild, [{ transform: 'scale(1)' }, { transform: 'scale(.78)', offset: .3 }, { transform: 'scale(1.1)', offset: .7 }, { transform: 'scale(1)' }], { duration: 340, easing: 'ease-out' });
 });
 bind('minimize', () => api.minimize());
+bind('viewToggle', () => setView(view === 'mindmap' ? 'outline' : 'mindmap'));
 bind('close', () => { if (flush()) return api.close(); });
 bind('more', () => isOpen($('menu')) ? dismiss($('menu')) : reveal($('menu')));
 bind('library', async () => { if (!flush()) return; dismiss($('menu')); await refreshList(true); reveal($('drawer')); $('search').focus(); });
@@ -169,6 +217,8 @@ document.addEventListener('keydown', e => {
   if (key === 'n') { e.preventDefault(); if (flush()) api.new().catch(report); }
   else if (key === 's') { e.preventDefault(); flush(); }
   else if (key === 'b') { e.preventDefault(); e.stopPropagation(); format('bold'); }
+  else if (key === 'm' && e.shiftKey) { e.preventDefault(); e.stopPropagation(); setView(view === 'mindmap' ? 'outline' : 'mindmap'); }
+  else if (view === 'mindmap' && (key === '=' || key === '+' || key === '-' || key === '0')) { e.preventDefault(); zoom = key === '0' ? 1 : Math.max(.5, Math.min(2, zoom + (key === '-' ? -.1 : .1))); drawMindmap(); }
 }, true);
 window.addEventListener('beforeunload', e => { if (!flush()) { e.preventDefault(); e.returnValue = false; } });
 window.addEventListener('blur', flush);
@@ -183,6 +233,7 @@ document.addEventListener('change', e => {
 api.load().then(data => {
   note = data; content = note.content;
   setTone(note.tone); $('pin').classList.toggle('active', note.pinned); $('pin').setAttribute('aria-pressed', String(!!note.pinned));
+  if (note.view === 'mindmap') { view = 'mindmap'; $('mindmap').hidden = false; $('rich').hidden = true; }
   renderEditor(); $('editorArea').classList.add('swap-in'); status('Saved locally');
   unsubscribe = api.onChanged?.(synchronize);
   synchronize();

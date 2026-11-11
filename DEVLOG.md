@@ -1,5 +1,13 @@
 # 开发日志
 
+## 2026-11-11 · v1.2.0 · 浅色/深色切换
+
+**实现**：沿用每张便签的 tone（0–100），不新增主题系统。src/tone.js 的 flipTone 取 100 − tone；若镜像后仍在同一侧（tone 45–55 一带）则切到 0 或 100，保证每次翻转。标题栏按钮显示将切换到的模式（浅色纸面显示月亮，深色显示太阳），Ctrl+Shift+L 同效，结果通过现有 meta 接口保存。
+
+**验证**：35 项测试通过；新增覆盖 0–100 每个 tone 都会翻转明暗，以及按钮和快捷键切换并保存 tone。
+
+---
+
 ## 2026-11-11 · v1.1.0 · 可折叠大纲与思维导图
 
 **需求**：所有标题与列表默认可折叠、标题大小自动，类似幕布；并可一键切换思维导图视图。
@@ -49,6 +57,12 @@
 ---
 
 ## English development log
+
+### 2026-11-11 · v1.2.0 · Light/dark switch
+
+**Implementation.** Reuses each note's existing tone (0–100) instead of adding a theme system. flipTone in src/tone.js returns 100 − tone, or 0/100 when the mirror stays on the same side (around 45–55), so every press flips. The title-bar button shows the mode it switches to (moon on light paper, sun on dark); Ctrl+Shift+L does the same, saving through the existing meta call.
+
+**Validation.** 35 tests pass, including a check that every tone 0–100 flips, and button/shortcut switching that saves the tone.
 
 ### 2026-11-11 · v1.1.0 · Foldable outline and mind map
 

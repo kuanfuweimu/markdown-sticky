@@ -23,6 +23,7 @@ Open **Markdown Sticky** from the Start menu, or double-click `win-unpacked/Mark
 | Heading down / up a level | Tab / Shift+Tab on a heading |
 | Outline ↔ mind map | Ctrl+Shift+M |
 | Zoom mind map | Ctrl+= / Ctrl+− / Ctrl+0 |
+| Light ↔ dark | Ctrl+Shift+L |
 
 ## Outline and mind map
 
@@ -32,7 +33,7 @@ The map button next to ⋯ (or Ctrl+Shift+M) switches the same note to a mind ma
 
 ## Tone
 
-The whole interface is grayscale. Open ⋯ and drag the **Tone** slider from white (0%) to black (100%), or pick a preset. Each note remembers its own tone; text switches to light ink on dark paper.
+The whole interface is grayscale. The sun/moon button in the title bar (Ctrl+Shift+L) flips a note between light and dark in one click and keeps a matching shade (Silver ↔ Graphite, Mist ↔ near-black). Open ⋯ and drag the **Tone** slider from white (0%) to black (100%), or pick a preset. Each note remembers its own tone; text switches to light ink on dark paper.
 
 ## Data
 
@@ -85,6 +86,7 @@ Node.js 24+: `npm ci` → `npm run build` → `npm test`. `npm run icon` regener
 | 标题降级 / 升级 | 在标题上按 Tab / Shift+Tab |
 | 大纲 ↔ 思维导图 | Ctrl+Shift+M |
 | 缩放思维导图 | Ctrl+= / Ctrl+− / Ctrl+0 |
+| 浅色 ↔ 深色 | Ctrl+Shift+L |
 
 ### 大纲与思维导图
 
@@ -94,7 +96,7 @@ Node.js 24+: `npm ci` → `npm run build` → `npm test`. `npm run icon` regener
 
 ### 色调
 
-界面为灰度。打开 ⋯，将 **Tone** 滑块从白色（0%）拖到黑色（100%），或选择预设。每张便签分别保存色调；深色纸面会使用浅色文字。
+界面为灰度。标题栏的太阳/月亮按钮（Ctrl+Shift+L）一键切换浅色/深色，并保持对应深浅（Silver ↔ Graphite，Mist ↔ 近黑）。打开 ⋯，将 **Tone** 滑块从白色（0%）拖到黑色（100%），或选择预设。每张便签分别保存色调；深色纸面会使用浅色文字。
 
 ### 数据
 

@@ -46,6 +46,25 @@ test('notes with tables open read-only so the file is not rewritten', async () =
   assert.equal(saves,0);
   w.close();
 });
+test('light/dark button and Ctrl+Shift+L flip the note and save the tone', async () => {
+  const metas=[];
+  const w = new JSDOM(fs.readFileSync('index.html','utf8'),{runScripts:'outside-only',pretendToBeVisual:true,url:'http://localhost'}).window;
+  w.Range.prototype.getClientRects=()=>[];
+  w.Range.prototype.getBoundingClientRect=()=>({left:0,right:0,top:0,bottom:0,width:0,height:0});
+  w.notes={load:async()=>({id:'test',mode:'rich',tone:18,content:'# Hi',pinned:false}),save:()=>({ok:true}),meta:async p=>{metas.push(p);return p;}};
+  w.eval(fs.readFileSync('dist/renderer.js','utf8'));
+  await new Promise(resolve=>setTimeout(resolve,50));
+  const theme=w.document.getElementById('theme'), body=w.document.body;
+  assert.equal(theme.getAttribute('aria-pressed'),'false');
+  theme.click(); await new Promise(resolve=>setTimeout(resolve,20));
+  assert.equal(body.style.colorScheme,'dark'); assert.equal(theme.getAttribute('aria-pressed'),'true');
+  assert.equal(w.document.getElementById('toneValue').textContent,'82%');
+  w.document.dispatchEvent(new w.KeyboardEvent('keydown',{key:'L',ctrlKey:true,shiftKey:true,bubbles:true}));
+  await new Promise(resolve=>setTimeout(resolve,20));
+  assert.equal(body.style.colorScheme,'light');
+  assert.equal(JSON.stringify(metas),'[{"tone":82},{"tone":18}]');
+  w.close();
+});
 test('dark tones switch the whole window to light ink', async () => {
   const metas=[];
   const dom = new JSDOM(fs.readFileSync('index.html','utf8'),{runScripts:'outside-only',pretendToBeVisual:true,url:'http://localhost'});

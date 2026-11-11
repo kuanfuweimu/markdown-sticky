@@ -1,5 +1,15 @@
 # 更新日志
 
+## 1.2.0 — 2026-11-11
+
+### 新功能
+
+- 标题栏新增浅色/深色切换按钮（Ctrl+Shift+L）：按当前色调镜像切换，保持对应深浅；中间色调直接切到纯白或纯黑，确保每次都翻转。每张便签记住自己的选择，仍可用 Tone 滑块微调。
+
+### 维护
+
+- 新增 2 项测试，共 35 项通过。
+
 ## 1.1.0 — 2026-11-11
 
 ### 新功能
@@ -37,6 +47,14 @@
 ---
 
 ## English changelog
+
+### 1.2.0 — 2026-11-11
+
+**Features**
+- Light/dark switch in the title bar (Ctrl+Shift+L). It mirrors the current tone so the shade carries over; mid tones jump to pure white or black so every press flips. Each note keeps its choice; the Tone slider still fine-tunes.
+
+**Maintenance**
+- Added 2 tests; all 35 pass.
 
 ### 1.1.0 — 2026-11-11
 

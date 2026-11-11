@@ -1,6 +1,6 @@
 import { Editor } from '@tiptap/core';
 import { richExtensions, requiresSource } from './editors.js';
-import { clampTone, palette } from './tone.js';
+import { clampTone, palette, flipTone } from './tone.js';
 import { autoHeadingLevel, getFolds, setFolds, toggleFold, outlineKey } from './outline.js';
 import { renderMindmap } from './mindmap-view.js';
 
@@ -46,6 +46,14 @@ function setTone(tone) {
   applyTone(document.body, note.tone);
   $('tone').value = note.tone; $('toneValue').textContent = note.tone + '%';
   document.querySelectorAll('[data-tone]').forEach(b => b.setAttribute('aria-pressed', String(Number(b.dataset.tone) === note.tone)));
+  const dark = palette(note.tone).dark, theme = $('theme');
+  theme.classList.toggle('isDark', dark); theme.setAttribute('aria-pressed', String(dark));
+  theme.title = dark ? 'Light mode · Ctrl+Shift+L' : 'Dark mode · Ctrl+Shift+L'; theme.setAttribute('aria-label', dark ? 'Light mode' : 'Dark mode');
+}
+function toggleTheme() {
+  if (!note) return;
+  setTone(flipTone(note.tone)); saveTone(0);
+  play($('theme').firstElementChild, [{ transform: 'rotate(-90deg) scale(.6)', opacity: .3 }, { transform: 'none', opacity: 1 }], { duration: 320, easing: EASE_OUT });
 }
 let toneTimer;
 function saveTone(delay) { clearTimeout(toneTimer); toneTimer = setTimeout(() => api.meta({ tone: note.tone }).catch(report), delay); }
@@ -188,6 +196,7 @@ bind('pin', async () => {
 });
 bind('minimize', () => api.minimize());
 bind('viewToggle', () => setView(view === 'mindmap' ? 'outline' : 'mindmap'));
+bind('theme', toggleTheme);
 bind('close', () => { if (flush()) return api.close(); });
 bind('more', () => isOpen($('menu')) ? dismiss($('menu')) : reveal($('menu')));
 bind('library', async () => { if (!flush()) return; dismiss($('menu')); await refreshList(true); reveal($('drawer')); $('search').focus(); });
@@ -218,6 +227,7 @@ document.addEventListener('keydown', e => {
   else if (key === 's') { e.preventDefault(); flush(); }
   else if (key === 'b') { e.preventDefault(); e.stopPropagation(); format('bold'); }
   else if (key === 'm' && e.shiftKey) { e.preventDefault(); e.stopPropagation(); setView(view === 'mindmap' ? 'outline' : 'mindmap'); }
+  else if (key === 'l' && e.shiftKey) { e.preventDefault(); e.stopPropagation(); toggleTheme(); }
   else if (view === 'mindmap' && (key === '=' || key === '+' || key === '-' || key === '0')) { e.preventDefault(); zoom = key === '0' ? 1 : Math.max(.5, Math.min(2, zoom + (key === '-' ? -.1 : .1))); drawMindmap(); }
 }, true);
 window.addEventListener('beforeunload', e => { if (!flush()) { e.preventDefault(); e.returnValue = false; } });

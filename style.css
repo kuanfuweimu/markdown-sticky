@@ -109,6 +109,8 @@ button:active:not(:disabled){background:var(--press);transition-duration:40ms}
 .titlebar .close:active{background:var(--ink);color:var(--paper);opacity:.8}
 .icon svg{transition:fill var(--t-base) ease}
 #pin.active svg{fill:currentColor;fill-opacity:.22}
+/* Light/dark switch shows the mode you would switch to: moon on light paper, sun on dark. */
+#theme .sun{display:none}#theme.isDark .sun{display:inline}#theme.isDark .moon{display:none}
 button:focus-visible:not(.noteCard),input:not([type=checkbox]):focus-visible{animation:focus-ring var(--t-base) var(--ease-out)}
 @keyframes focus-ring{from{outline-offset:4px;outline-color:transparent}}
 #tone::-webkit-slider-thumb{transition:transform var(--t-base) var(--ease-spring)}

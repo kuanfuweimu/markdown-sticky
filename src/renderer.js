@@ -79,7 +79,10 @@ function renderEditor(focus = true) {
     rich = new Editor({ element: $('rich'), extensions: richExtensions(), content, contentType: 'markdown', editable: !readOnly,
       editorProps: { attributes: { 'aria-label': 'Note', spellcheck: 'false' } },
       onUpdate: ({ editor, transaction }) => { if (!applyingFile && transaction.docChanged) changed(editor.getMarkdown()); },
-      onTransaction: ({ transaction }) => { if (view === 'mindmap' && (transaction.docChanged || transaction.getMeta(outlineKey))) scheduleMap(); },
+      onTransaction: ({ transaction }) => {
+        if (transaction.docChanged) syncTitle();
+        if (view === 'mindmap' && (transaction.docChanged || transaction.getMeta(outlineKey))) scheduleMap();
+      },
     });
     if (focus && !readOnly && view === 'outline') rich.commands.focus('end');
   } finally { applyingFile = false; }
@@ -88,6 +91,10 @@ function renderEditor(focus = true) {
 }
 function updateChrome() {
   const map = view === 'mindmap';
+  document.querySelector('.formatTools').hidden = map; document.querySelector('.mapTools').hidden = !map;
+  document.querySelectorAll('[data-map]').forEach(b => b.disabled = readOnly);
+  $('docTitle').readOnly = readOnly;
+  syncTitle();
   document.querySelectorAll('[data-format]').forEach(b => b.disabled = readOnly || map);
   $('viewToggle').setAttribute('aria-pressed', String(map)); $('viewToggle').classList.toggle('active', map);
   $('viewToggle').title = map ? 'Back to outline · Ctrl+Shift+M' : 'Mind map · Ctrl+Shift+M';
@@ -208,6 +215,33 @@ bind('helpClose', closeHelp);
 $('helpDialog').addEventListener('cancel', e => { e.preventDefault(); closeHelp(); });
 $('search').oninput = () => drawList(); $('showArchived').onchange = () => refreshList(true).catch(report);
 document.querySelectorAll('[data-format]').forEach(b => { b.onmousedown = e => e.preventDefault(); b.onclick = () => format(b.dataset.format); });
+document.querySelectorAll('[data-map]').forEach(b => {
+  b.onmousedown = e => e.preventDefault();
+  b.onclick = () => { if (!mindmap) return; ({ child: () => mindmap.add('child'), sibling: () => mindmap.add('sibling'), edit: () => mindmap.startEdit(mindmap.selected), delete: () => mindmap.remove() })[b.dataset.map](); };
+});
+// The title is the note's opening H1: typing here creates, renames or (when cleared) removes that heading.
+function titleNode() { const first = rich?.state.doc.firstChild; return first?.type.name === 'heading' && first.attrs.level === 1 ? first : null; }
+function syncTitle() {
+  const input = $('docTitle');
+  if (document.activeElement !== input) input.value = titleNode()?.textContent || '';
+  document.title = (input.value.trim() || 'Untitled') + ' · Markdown Sticky';
+}
+function setTitle(text) {
+  if (!rich || readOnly) return;
+  text = text.replace(/\s+/g, ' ').trim();
+  const head = titleNode(), { state } = rich, tr = state.tr;
+  if (head) {
+    if (head.textContent === text) return;
+    if (text) tr.insertText(text, 1, 1 + head.content.size); else tr.delete(0, head.nodeSize);
+  } else if (text) tr.insert(0, state.schema.nodes.heading.create({ level: 1 }, state.schema.text(text)));
+  if (tr.docChanged) rich.view.dispatch(tr);
+}
+$('docTitle').addEventListener('input', () => setTitle($('docTitle').value));
+$('docTitle').addEventListener('keydown', e => {
+  if (e.isComposing || e.keyCode === 229) return;
+  if (e.key === 'Enter' || e.key === 'Escape') { e.preventDefault(); if (view === 'mindmap') $('mindmap').focus(); else rich?.commands.focus('start'); }
+});
+$('docTitle').addEventListener('blur', syncTitle);
 document.querySelectorAll('[data-tone]').forEach(b => { b.style.background = palette(b.dataset.tone).vars.paper; b.onclick = () => { setTone(b.dataset.tone); saveTone(0); }; });
 $('tone').oninput = () => { document.body.classList.add('scrubbing'); setTone($('tone').value); saveTone(250); };
 $('tone').onchange = () => { document.body.classList.remove('scrubbing'); saveTone(0); };

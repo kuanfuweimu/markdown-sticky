@@ -1,7 +1,7 @@
 :root{font-family:"Segoe UI Variable Text","Segoe UI","Microsoft YaHei UI",sans-serif;font-size:14px;font-synthesis:none}
 *{box-sizing:border-box}[hidden]{display:none!important}
-/* Tone variables are overwritten per note from JS; these defaults are the white tone. */
-body{--paper:#fff;--bar:#f2f2f2;--surface:#fff;--ink:#141414;--tint:0 0 0;--line:rgb(var(--tint)/.1);--hover:rgb(var(--tint)/.06);--press:rgb(var(--tint)/.12);--muted:color-mix(in srgb,var(--ink) 55%,transparent);margin:0;height:100vh;display:flex;flex-direction:column;background:var(--paper);color:var(--ink);overflow:hidden}
+/* Tone variables are overwritten per note from JS; these defaults are the black tone so new windows open dark without a flash. */
+body{--paper:#000;--bar:#0d0d0d;--surface:#141414;--ink:#f2f2f2;--tint:255 255 255;color-scheme:dark;--line:rgb(var(--tint)/.1);--hover:rgb(var(--tint)/.06);--press:rgb(var(--tint)/.12);--muted:color-mix(in srgb,var(--ink) 55%,transparent);margin:0;height:100vh;display:flex;flex-direction:column;background:var(--paper);color:var(--ink);overflow:hidden}
 ::selection{background:rgb(var(--tint)/.18)}
 button,input{font:inherit;color:inherit}
 button{border:0;background:transparent;border-radius:6px;cursor:pointer}
@@ -12,7 +12,12 @@ button:disabled{opacity:.35;cursor:default}
 .icon svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
 .titlebar{height:40px;min-height:40px;background:var(--bar);display:flex;align-items:center;gap:1px;padding:0 7px;-webkit-app-region:drag;user-select:none}
 .titlebar button{-webkit-app-region:no-drag}
-.titlebar #windowTitle{font-size:12px;flex:1;color:var(--muted);margin-left:6px;letter-spacing:.2px}
+/* The note title sits in the title bar and edits in place; the space after it still drags the window. */
+#docTitle{-webkit-app-region:no-drag;flex:0 1 auto;width:auto;min-width:60px;max-width:calc(100% - 210px);field-sizing:content;margin-left:4px;padding:4px 7px;border:0;border-radius:6px;background:transparent;font-size:13px;font-weight:600;color:var(--ink);text-overflow:ellipsis}
+#docTitle::placeholder{color:var(--muted);font-weight:400}
+#docTitle:hover{background:var(--hover)}#docTitle:focus{background:var(--paper);outline:1px solid var(--line);outline-offset:0}
+.titleDrag{flex:1;align-self:stretch}
+.formatTools,.mapTools{display:flex;gap:2px;align-items:center}
 .titlebar .close:hover{background:var(--ink);color:var(--paper)}
 .active{background:var(--press)}
 .toolbar{min-height:43px;display:flex;gap:2px;align-items:center;padding:5px 12px;border-bottom:1px solid var(--line);user-select:none}

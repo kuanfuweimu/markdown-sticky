@@ -1,5 +1,17 @@
 # 开发日志
 
+## 2026-11-11 · v1.4.0 · 导图编辑修复、标题栏标题、默认深色
+
+**反馈**：v1.3.0 安装后导图仍然无法编辑；文档没有可设置的标题；希望默认深色。
+
+**原因**：拖动时在导图容器上调用 setPointerCapture。Chromium 会把捕获期间产生的 click/dblclick 转给捕获元素，双击的目标变成画布而不是节点，所以编辑从未触发。jsdom 不实现捕获重定向，测试直接派发 dblclick 到节点，因而没有发现。用户的便签都不是只读，排除了只读原因。
+
+**实现**：拖动改为在 document 上监听 pointermove/up，不再捕获；在 pointerup 中自行判断同一节点 450ms 内的第二次点击为编辑，不依赖浏览器 dblclick；选中节点后直接输入字符即开始编辑；导图模式工具栏换成可见的编辑按钮。标题栏输入框直接编辑开头的 H1（无则插入，清空则删除），并同步窗口标题。store 新建便签 tone 默认 100，CSS 默认变量改为黑色避免启动闪白。
+
+**验证**：45 项测试通过。新增测试经由 pointerdown/up 路径验证连点编辑，不依赖 dblclick。真实窗口内效果仍需用户确认。
+
+---
+
 ## 2026-11-11 · v1.3.0 · 可编辑、可拖动的思维导图
 
 **反馈**：导图无法移动，希望在导图中直接编辑。
@@ -72,6 +84,16 @@
 ---
 
 ## English development log
+
+### 2026-11-11 · v1.4.0 · Map editing fix, title-bar title, dark default
+
+**Feedback.** After installing v1.3.0 the map still could not be edited; notes had no settable title; dark should be the default.
+
+**Cause.** Dragging called setPointerCapture on the map container. Chromium retargets click/dblclick generated during capture to the capturing element, so dblclick hit the canvas instead of the node and editing never started. jsdom does not implement that retargeting and the test dispatched dblclick directly on the node, so it passed. The user's notes were all editable, ruling out read-only mode.
+
+**Implementation.** Drag tracking listens on document pointermove/up without capture. A second pointerup on the same node within 450ms starts editing, independent of dblclick; typing a character on a selected node also starts editing; the map toolbar shows visible edit buttons. A title-bar input edits the opening H1 (inserting or removing it as needed) and updates the window title. New notes default to tone 100 and CSS defaults are black to avoid a white flash.
+
+**Validation.** 45 tests pass; the new test drives editing through pointerdown/up rather than dblclick. Behaviour in the real window still needs user confirmation.
 
 ### 2026-11-11 · v1.3.0 · Editable, draggable mind map
 

@@ -44,14 +44,18 @@ export class MindmapView {
     Object.assign(this, { host, getEditor: editor, readOnly, onOpen, title });
     this.selected = null; this.zoom = 1; this.editing = null; this.press = null; this.nodes = [];
     host.setAttribute('role', 'tree');
+    // Move/up listen on the document instead of capturing the pointer: Chromium retargets click and dblclick
+    // to a capturing element, which made double-click-to-edit land on the canvas instead of the node.
+    const doc = host.ownerDocument;
     host.addEventListener('pointerdown', e => this.down(e));
-    host.addEventListener('pointermove', e => this.move(e));
-    host.addEventListener('pointerup', e => this.up(e));
-    host.addEventListener('pointercancel', () => this.cancelPress());
+    doc.addEventListener('pointermove', e => this.move(e));
+    doc.addEventListener('pointerup', e => this.up(e));
+    doc.addEventListener('pointercancel', () => this.cancelPress());
     host.addEventListener('dblclick', e => {
       const el = e.target.closest?.('.mm-node');
       if (el && !e.target.closest('.mm-fold,.mm-check,input')) this.startEdit(this.posOf(el));
     });
+    this.lastClick = { pos: undefined, at: 0 };
     host.addEventListener('keydown', e => this.key(e));
     host.addEventListener('wheel', e => { if (e.ctrlKey) { e.preventDefault(); this.setZoom(this.zoom * (e.deltaY < 0 ? 1.1 : 1 / 1.1)); } }, { passive: false });
   }
@@ -192,7 +196,12 @@ export class MindmapView {
       ArrowLeft: () => this.nav('left'), ArrowRight: () => this.nav('right'), ArrowUp: () => this.nav('up'), ArrowDown: () => this.nav('down'),
       Home: () => this.select(null),
     }[k];
-    if (handled) { e.preventDefault(); e.stopPropagation(); handled(); }
+    if (handled) { e.preventDefault(); e.stopPropagation(); handled(); return; }
+    // Typing a character on a selected node starts editing with it, like most mind-map apps.
+    if (k.length === 1 && !this.readOnly()) {
+      const node = ops.findNode(this.tree, this.selected);
+      if (node?.editable) { e.preventDefault(); this.startEdit(this.selected); if (this.editing) { this.editing.input.value = k; this.editing.input.dispatchEvent(new Event('input')); } }
+    }
   }
   nav(dir) {
     const cur = this.current(); if (!cur) return;
@@ -213,7 +222,6 @@ export class MindmapView {
     this.host.focus({ preventScroll: true });
     if (!el) { this.press = { pan: true, x: e.clientX, y: e.clientY, left: this.host.scrollLeft, top: this.host.scrollTop }; this.host.classList.add('panning'); }
     else this.press = { el, pos: this.posOf(el), x: e.clientX, y: e.clientY, action: e.target.closest('.mm-fold') ? 'fold' : e.target.closest('.mm-check') ? 'check' : null };
-    try { this.host.setPointerCapture?.(e.pointerId); } catch { /* synthetic events have no pointer to capture */ }
   }
   move(e) {
     const p = this.press; if (!p) return;
@@ -247,7 +255,13 @@ export class MindmapView {
     if (p.drag) { if (p.drag.drop) this.apply(ops.moveNode(this.editor, p.pos, p.drag.drop.target, p.drag.drop.zone)); else this.render(); return; }
     if (p.action === 'fold') { this.select(p.pos); this.fold(p.pos); }
     else if (p.action === 'check' && !this.readOnly()) this.apply(ops.toggleCheck(this.editor, p.pos));
-    else this.select(p.pos);
+    else {
+      // A second click on the same node within 450ms edits it, without relying on the browser's dblclick target.
+      const now = Date.now(), again = this.lastClick.pos === p.pos && now - this.lastClick.at < 450;
+      this.lastClick = again ? { pos: undefined, at: 0 } : { pos: p.pos, at: now };
+      this.select(p.pos);
+      if (again) this.startEdit(p.pos);
+    }
   }
   cancelPress() {
     const p = this.press; this.press = null;

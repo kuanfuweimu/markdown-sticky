@@ -1,6 +1,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { randomUUID, createHash } = require('node:crypto');
+const DEFAULT_TONE = 100; // new notes start dark
 const revisionOf = content => createHash('sha256').update(content).digest('hex');
 class NoteStore {
   constructor(root) {
@@ -30,7 +31,7 @@ class NoteStore {
       present.add(id);
       const revision = revisionOf(content), previous = this.revisions.get(id);
       if (!this.meta[id]) {
-        this.meta[id] = { id, tone: 0, mode: 'rich', pinned: false, updated: stat.mtimeMs };
+        this.meta[id] = { id, tone: DEFAULT_TONE, mode: 'rich', pinned: false, updated: stat.mtimeMs };
         metadataChanged = true;
       } else if (previous && previous !== revision) {
         this.meta[id].updated = stat.mtimeMs;
@@ -82,7 +83,7 @@ class NoteStore {
   }
   create(mode = 'rich', content = '') {
     const id = randomUUID();
-    this.meta[id] = { id, mode, tone: 0, pinned: false, updated: Date.now() };
+    this.meta[id] = { id, mode, tone: DEFAULT_TONE, pinned: false, updated: Date.now() };
     this.atomic(this.file(id), content);
     this.revisions.set(id, revisionOf(content)); this.present.add(id);
     this.commit(); return this.read(id);

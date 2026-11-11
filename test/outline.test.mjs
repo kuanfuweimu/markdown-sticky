@@ -224,3 +224,39 @@ test('a note saved in mind map view reopens in mind map view', async () => {
   assert.deepEqual([...w.document.querySelectorAll('.mm-node .mm-label')].map(n => n.textContent), ['根', '叶']);
   w.close();
 });
+
+test('title field creates, renames and clears the opening H1', async () => {
+  const { w, d, saved, labels, tick } = await openMap('- 工作');
+  const title = d.getElementById('docTitle');
+  assert.equal(title.value, '');
+  title.value = '本周计划'; title.dispatchEvent(new w.Event('input')); await tick(450);
+  assert.equal(saved.at(-1).trim(), '# 本周计划\n\n- 工作');
+  title.value = '下周计划'; title.dispatchEvent(new w.Event('input')); await tick(450);
+  assert.equal(saved.at(-1).trim(), '# 下周计划\n\n- 工作');
+  d.getElementById('viewToggle').click(); await tick();
+  assert.equal(labels()[0], '下周计划', 'title is the mind-map root');
+  title.value = ''; title.dispatchEvent(new w.Event('input')); await tick(450);
+  assert.equal(saved.at(-1).trim(), '- 工作');
+  assert.match(d.title, /^Untitled/);
+  w.close();
+});
+
+test('mind map: toolbar buttons, click-twice and type-to-edit all edit nodes', async () => {
+  const { w, d, map, saved, labels, nodeEl, press, key, tick } = await openMap('# 计划\n\n- 工作');
+  d.getElementById('viewToggle').click(); await tick();
+  assert.equal(d.querySelector('.mapTools').hidden, false);
+  assert.equal(d.querySelector('.formatTools').hidden, true);
+  press(nodeEl('工作'));
+  d.querySelector('[data-map=child]').click(); await tick();
+  let input = d.querySelector('.mm-input'); input.value = '周报'; key('Enter', {}, input); await tick();
+  press(nodeEl('周报')); press(nodeEl('周报')); await tick();
+  input = d.querySelector('.mm-input'); assert.ok(input, 'second click edits');
+  input.value = '周报 v2'; key('Enter', {}, input); await tick();
+  press(nodeEl('工作')); await tick(500);
+  key('学'); await tick();
+  input = d.querySelector('.mm-input'); assert.equal(input.value, '学', 'typing starts an edit');
+  input.value = '学习'; key('Enter', {}, input); await tick(450);
+  assert.equal(saved.at(-1).trim(), '# 计划\n\n- 学习\n  - 周报 v2');
+  assert.deepEqual(labels(), ['计划', '学习', '周报 v2']);
+  w.close();
+});

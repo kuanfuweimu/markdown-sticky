@@ -6,6 +6,7 @@ import { NoteStore } from '../store.cjs';
 const root = path.resolve('test-data-' + process.pid);
 test('save, backup, restart, metadata, archive and restore', () => {
   const store = new NoteStore(root); const note = store.create('rich','# 中文\n\n1. 第一');
+  assert.equal(note.tone,100,'new notes start dark');
   store.save(note.id, '# 更新\n\n- [x] 完成');
   assert.equal(fs.readFileSync(store.file(note.id)+'.bak','utf8'),'# 中文\n\n1. 第一');
   store.update(note.id,{tone:140,pinned:true,archived:true,view:'mindmap'});

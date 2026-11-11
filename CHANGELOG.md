@@ -1,6 +1,16 @@
 # 更新日志
 
-## 1.3.0 — 2026-11-11
+## 1.4.0 — 2026-11-11
+
+### 新功能
+
+- 标题栏可直接设置便签标题，保存为第一个 # 标题，同时作为列表名称和导图中心。
+- 新便签默认深色；已有便签保持原色调。
+- 导图模式下工具栏显示「＋ Child / ＋ Sibling / Rename / Delete」按钮。
+
+### 修复
+
+- 导图双击无法编辑：拖动用的指针捕获会把双击事件转给画布。改为在文档上监听拖动，并增加## 1.3.0 — 2026-11-11
 
 ### 新功能
 
@@ -60,6 +70,19 @@
 ---
 
 ## English changelog
+
+### 1.4.0 — 2026-11-11
+
+**Features**
+- Set the note title in the title bar. It is saved as the first # heading and names the note in All notes and the mind-map root.
+- New notes start dark; existing notes keep their tone.
+- In mind-map view the toolbar shows ＋ Child / ＋ Sibling / Rename / Delete buttons.
+
+**Fixes**
+- Double-click did not edit map nodes: the pointer capture used for dragging retargeted dblclick to the canvas. Drag tracking now listens on the document, and clicking a node twice or typing on a selected node also starts editing.
+
+**Maintenance**
+- Added 3 tests; all 45 pass.
 
 ### 1.3.0 — 2026-11-11
 

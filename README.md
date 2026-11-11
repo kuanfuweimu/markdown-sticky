@@ -25,6 +25,10 @@ Open **Markdown Sticky** from the Start menu, or double-click `win-unpacked/Mark
 | Zoom mind map | Ctrl+= / Ctrl+− / Ctrl+0 |
 | Light ↔ dark | Ctrl+Shift+L |
 
+## Title
+
+Click the title at the top left of the window to name the note. It is stored as the note's first `# ` heading, so it also names the note in All notes and becomes the centre of the mind map. Clearing it removes that heading.
+
 ## Outline and mind map
 
 Every note is a foldable outline, in the spirit of outliner apps. Headings fold their whole section and list items with children fold their sub-list, from the arrow that appears in the left gutter. Folded branches show a … marker. The **H** button picks the heading size for you: the first heading becomes the title (H1), later ones match the section above; Tab / Shift+Tab move a heading down or up a level.
@@ -33,7 +37,7 @@ The map button next to ⋯ (or Ctrl+Shift+M) switches the same note to a mind ma
 
 ## Tone
 
-The whole interface is grayscale. The sun/moon button in the title bar (Ctrl+Shift+L) flips a note between light and dark in one click and keeps a matching shade (Silver ↔ Graphite, Mist ↔ near-black). Open ⋯ and drag the **Tone** slider from white (0%) to black (100%), or pick a preset. Each note remembers its own tone; text switches to light ink on dark paper.
+The whole interface is grayscale. The sun/moon button in the title bar (Ctrl+Shift+L) flips a note between light and dark in one click and keeps a matching shade (Silver ↔ Graphite, Mist ↔ near-black). Open ⋯ and drag the **Tone** slider from white (0%) to black (100%), or pick a preset. New notes start dark (100%). Each note remembers its own tone; text switches to light ink on dark paper.
 
 ## Data
 
@@ -88,6 +92,10 @@ Node.js 24+: `npm ci` → `npm run build` → `npm test`. `npm run icon` regener
 | 缩放思维导图 | Ctrl+= / Ctrl+− / Ctrl+0 |
 | 浅色 ↔ 深色 | Ctrl+Shift+L |
 
+### 标题
+
+点窗口左上角的标题即可给便签命名。标题保存为便签的第一个 `# ` 标题，因此也是 All notes 里的名字和思维导图的中心。清空即删除该标题。
+
 ### 大纲与思维导图
 
 每张便签都是可折叠大纲，类似幕布。标题折叠整个章节，带子项的列表项折叠其子列表，点击左侧出现的箭头即可；折叠后显示 … 标记。**H** 按钮自动决定标题大小：第一个标题为主标题（H1），之后的标题跟随上方章节层级；在标题上按 Tab / Shift+Tab 降级或升级。
@@ -96,7 +104,7 @@ Node.js 24+: `npm ci` → `npm run build` → `npm test`. `npm run icon` regener
 
 ### 色调
 
-界面为灰度。标题栏的太阳/月亮按钮（Ctrl+Shift+L）一键切换浅色/深色，并保持对应深浅（Silver ↔ Graphite，Mist ↔ 近黑）。打开 ⋯，将 **Tone** 滑块从白色（0%）拖到黑色（100%），或选择预设。每张便签分别保存色调；深色纸面会使用浅色文字。
+界面为灰度。标题栏的太阳/月亮按钮（Ctrl+Shift+L）一键切换浅色/深色，并保持对应深浅（Silver ↔ Graphite，Mist ↔ 近黑）。打开 ⋯，将 **Tone** 滑块从白色（0%）拖到黑色（100%），或选择预设。新便签默认深色（100%）。每张便签分别保存色调；深色纸面会使用浅色文字。
 
 ### 数据
 

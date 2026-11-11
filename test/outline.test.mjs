@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import { JSDOM } from 'jsdom';
 import { Editor } from '@tiptap/core';
 import { richExtensions, indentRich, outdentRich } from '../src/editors.js';
-import { scanOutline, getFolds, setFolds, toggleFold, foldAll, foldAtCursor, autoHeadingLevel } from '../src/outline.js';
+import { scanOutline, getFolds, setFolds, toggleFold, foldAll, foldAtCursor, autoHeadingLevel, outlineNumbers } from '../src/outline.js';
 import { mindmapTree } from '../src/mindmap.js';
 import { layoutMindmap } from '../src/mindmap-view.js';
 
@@ -299,5 +299,28 @@ test('close always saves and closes, even mid-IME composition or mid map edit', 
     assert.equal(closes, 2, 'stuck IME composition does not block closing');
     assert.match(saved.at(-1), /^# 新标题/);
   }
+  w.close();
+});
+
+test('nested numbered lists show 1. / 1.1 / 2.1.1 numbers without changing the Markdown', () => {
+  const md = '1. 已更新\n   1. 品牌\n      1. Logo\n      2. 间距\n   2. 体验\n2. 参考\n   1. 底部\n      1. 素材\n   2. 入口\n   - 备注\n     1. 子项';
+  const e = rich(md);
+  const nums = [...outlineNumbers(e.state.doc)].map(([pos, n]) => n + ' ' + e.state.doc.nodeAt(pos).firstChild.textContent);
+  assert.deepEqual(nums, ['1 已更新', '1.1 品牌', '1.1.1 Logo', '1.1.2 间距', '1.2 体验', '2 参考', '2.1 底部', '2.1.1 素材', '2.2 入口', '2.2.1 子项']);
+  const shown = [...e.view.dom.querySelectorAll('li[data-num]')].map(li => li.dataset.num);
+  assert.deepEqual(shown.slice(0, 3), ['1.', '1.1', '1.1.1'], 'top level keeps its trailing dot');
+  assert.equal(e.getMarkdown().trim().split('\n')[1].trim(), '1. 品牌', 'file keeps standard Markdown numbering');
+  const b = rich('- 备注\n  1. 子项');
+  assert.deepEqual([...outlineNumbers(b.state.doc).values()], ['1'], 'numbered list under a bullet restarts');
+  b.destroy();
+  const s = rich('3. 三\n   1. 子');
+  assert.deepEqual([...outlineNumbers(s.state.doc).values()], ['3', '3.1'], 'start number is honoured');
+  e.destroy(); s.destroy();
+});
+
+test('mind map nodes show the same hierarchical numbers', async () => {
+  const { w, d, tick } = await openMap('# 计划\n\n1. 工作\n   1. 设计\n      1. 原型');
+  d.getElementById('viewToggle').click(); await tick();
+  assert.deepEqual([...d.querySelectorAll('.mm-node .mm-num')].map(n => n.textContent), ['1', '1.1', '1.1.1']);
   w.close();
 });

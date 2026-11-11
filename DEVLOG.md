@@ -1,5 +1,15 @@
 # 开发日志
 
+## 2026-11-11 · v1.5.0 · 层级编号
+
+**需求**：编号列表显示为 1.1、1.2、2.1.1 这样的层级结构。
+
+**实现**：outline 插件新增 outlineNumbers(doc)，遍历文档，为编号列表项计算层级编号（尊重列表起始号；项目符号或待办列表下的编号列表重新开始），以节点装饰写入 data-num 和按编号长度计算的缩进宽度。CSS 隐藏浏览器原生编号，用 ::before 显示。编号放在插件状态中，导图读取同一份数据显示在节点前。不修改文档，因此 Markdown 文件保持标准格式。
+
+**验证**：49 项测试通过，覆盖多层编号、起始号、项目符号下重新编号、文件格式不变及导图编号。真实窗口中的对齐仍需用户确认。
+
+---
+
 ## 2026-11-11 · v1.4.2 · 关不掉窗口
 
 **原因**：关闭按钮和 beforeunload 都要求 flush() 返回 true。flush 在 view.composing 为真时直接返回 false 并排队重试，这个检查在 dirty 判断之前，所以即使没有未保存内容，只要输入法处于组合状态就拒绝关闭。主进程 fadeClose 淡出后，beforeunload 取消关闭，400ms 后窗口淡入回来，看起来像关不掉。导图节点编辑中关闭时，输入框内容也不会保存。
@@ -104,6 +114,14 @@
 ---
 
 ## English development log
+
+### 2026-11-11 · v1.5.0 · Hierarchical numbering
+
+**Request.** Show numbered lists as 1.1, 1.2, 2.1.1.
+
+**Implementation.** The outline plugin adds outlineNumbers(doc), which walks the document and computes hierarchical numbers for ordered-list items (honouring start numbers; a numbered list under a bullet or to-do list restarts). Node decorations write data-num and a gutter width sized to the number. CSS hides the native markers and shows ::before. The numbers live in plugin state, and the mind map reads the same data for its nodes. The document is not modified, so the Markdown stays standard.
+
+**Validation.** 49 tests pass, covering multi-level numbers, start numbers, restarts under bullets, unchanged file format and map numbers. Alignment in the real window still needs confirmation.
 
 ### 2026-11-11 · v1.4.2 · Window would not close
 

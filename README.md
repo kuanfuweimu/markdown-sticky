@@ -25,6 +25,10 @@ Open **Markdown Sticky** from the Start menu, or double-click `win-unpacked/Mark
 | Zoom mind map | Ctrl+= / Ctrl+− / Ctrl+0 |
 | Light ↔ dark | Ctrl+Shift+L |
 
+## Numbering
+
+Nested numbered lists show hierarchical numbers: 1. → 1.1 → 1.1.1, in both the outline and the mind map. Press Tab on a numbered item to go one level deeper. The numbers are display only; the file keeps standard Markdown numbering, so other editors still read it.
+
 ## Title
 
 Click the title at the top left of the window to name the note. It is stored as the note's first `# ` heading, so it also names the note in All notes and becomes the centre of the mind map. Clearing it removes that heading.
@@ -91,6 +95,10 @@ Node.js 24+: `npm ci` → `npm run build` → `npm test`. `npm run icon` regener
 | 大纲 ↔ 思维导图 | Ctrl+Shift+M |
 | 缩放思维导图 | Ctrl+= / Ctrl+− / Ctrl+0 |
 | 浅色 ↔ 深色 | Ctrl+Shift+L |
+
+### 层级编号
+
+嵌套的编号列表显示为层级编号：1. → 1.1 → 1.1.1，大纲和思维导图都一样。在编号项上按 Tab 进入下一级。编号只影响显示，文件仍是标准 Markdown 编号，其他编辑器照常可读。
 
 ### 标题
 

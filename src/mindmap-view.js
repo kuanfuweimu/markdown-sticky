@@ -14,7 +14,7 @@ export function layoutMindmap(root, folded) {
   const visit = (n, depth, parent) => {
     const open = !(n.pos != null && folded.has(n.pos));
     const prefix = n.checked != null ? 22 : 0;
-    const item = { n, depth, parent, w: labelWidth(n.label, depth ? 13 : 15) + prefix, kids: [], collapsed: !open && n.children.length > 0 };
+    const item = { n, depth, parent, w: labelWidth(n.label, depth ? 13 : 15) + prefix + (n.num ? n.num.length * 7.4 + 6 : 0), kids: [], collapsed: !open && n.children.length > 0 };
     nodes.push(item); cols[depth] = Math.max(cols[depth] || 0, item.w);
     if (open) for (const c of n.children) item.kids.push(visit(c, depth + 1, item));
     return item;
@@ -110,6 +110,9 @@ export class MindmapView {
     const editor = this.editor; if (!editor) return;
     const st = outlineKey.getState(editor.state);
     this.tree = mindmapTree(editor.state.doc, this.title);
+    // Same 1.1 / 2.1.1 numbers as the outline.
+    const walk = n => { const num = st.numbers?.get(n.pos); if (num) n.num = num; n.children.forEach(walk); };
+    walk(this.tree);
     this.foldable = new Set(st.items.map(i => i.pos));
     const { nodes, width, height } = layoutMindmap(this.tree, st.folded);
     this.nodes = nodes;
@@ -144,6 +147,7 @@ export class MindmapView {
         const c = d.createElement('span'); c.className = 'mm-check'; c.setAttribute('role', 'checkbox'); c.setAttribute('aria-checked', String(n.checked)); c.title = n.checked ? 'Mark not done' : 'Mark done';
         el.append(c);
       }
+      if (n.num) { const num = d.createElement('span'); num.className = 'mm-num'; num.textContent = n.num; el.append(num); }
       const label = d.createElement('span'); label.className = 'mm-label'; label.textContent = n.label; el.append(label);
       if (canFold) {
         const f = d.createElement('span'); f.className = 'mm-fold'; f.title = it.collapsed ? 'Expand' : 'Collapse';

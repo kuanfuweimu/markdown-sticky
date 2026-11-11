@@ -1,5 +1,15 @@
 # 更新日志
 
+## 1.5.0 — 2026-11-11
+
+### 新功能
+
+- 嵌套编号列表显示层级编号 1. / 1.1 / 2.1.1，思维导图节点同样显示。编号随增删、缩进、拖动自动更新；只影响显示，文件仍为标准 Markdown。
+
+### 维护
+
+- 新增 2 项测试，共 49 项通过。
+
 ## 1.4.2 — 2026-11-11
 
 ### 修复
@@ -82,6 +92,14 @@
 ---
 
 ## English changelog
+
+### 1.5.0 — 2026-11-11
+
+**Features**
+- Nested numbered lists show hierarchical numbers 1. / 1.1 / 2.1.1, also on mind-map nodes. Numbers update with every insert, indent and drag; display only, the file stays standard Markdown.
+
+**Maintenance**
+- Added 2 tests; all 49 pass.
 
 ### 1.4.2 — 2026-11-11
 

@@ -42,11 +42,36 @@ const toggleWidget = (folded, owner) => view => {
   return b;
 };
 
+// Legal-style numbers for nested ordered lists: 1. → 1.1 → 1.1.1. A numbered list inside a bullet or to-do list
+// starts a fresh sequence, and each list honours its own start number. Display only: the Markdown stays standard.
+export function outlineNumbers(doc) {
+  const map = new Map();
+  const walk = (node, start, prefix) => node.forEach((child, offset) => {
+    const pos = start + offset;
+    if (child.type.name === 'orderedList') {
+      let n = Number(child.attrs.start) || 1;
+      child.forEach((item, io) => {
+        const ipos = pos + 1 + io, num = prefix ? `${prefix}.${n}` : String(n);
+        map.set(ipos, num); n++;
+        walk(item, ipos + 1, num);
+      });
+    } else if (LIST.has(child.type.name)) child.forEach((item, io) => walk(item, pos + 1 + io + 1, ''));
+    else if (!child.isTextblock && !child.isAtom) walk(child, pos + 1, prefix);
+  });
+  walk(doc, 0, '');
+  return map;
+}
 function build(doc, wanted) {
   const items = scanOutline(doc);
   const valid = new Set(items.map(i => i.pos));
   const folded = new Set([...wanted].filter(p => valid.has(p)));
   const decos = [], hidden = [];
+  const numbers = outlineNumbers(doc);
+  for (const [pos, num] of numbers) {
+    const item = doc.nodeAt(pos);
+    // Longer numbers get a wider gutter so 2.1.10 never overlaps the text.
+    decos.push(Decoration.node(pos, pos + item.nodeSize, { 'data-num': num + (num.includes('.') ? '' : '.'), style: `--num-w:${Math.max(1.6, num.length * .58 + .7)}em` }));
+  }
   for (const it of items) {
     const isFolded = folded.has(it.pos);
     if (it.kind === 'item') decos.push(Decoration.node(it.pos, it.end, { class: 'outline-parent' + (isFolded ? ' folded' : ''), 'data-depth': String(Math.min(it.depth, 3)) }));
@@ -58,7 +83,7 @@ function build(doc, wanted) {
     hidden.push({ owner: it.pos, from: it.hideFrom, to: it.end });
     if (it.kind === 'heading') for (const b of it.blocks) decos.push(Decoration.node(b.pos, b.pos + b.node.nodeSize, { class: 'fold-hidden' }));
   }
-  return { folded, items, hidden, decorations: DecorationSet.create(doc, decos) };
+  return { folded, items, hidden, numbers, decorations: DecorationSet.create(doc, decos) };
 }
 
 function outlinePlugin() {

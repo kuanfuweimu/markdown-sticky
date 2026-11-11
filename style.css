@@ -38,6 +38,12 @@ button:disabled{opacity:.35;cursor:default}
 .prose h1>.fold-toggle,.prose h2>.fold-toggle,.prose h3>.fold-toggle,.prose h4>.fold-toggle,.prose h5>.fold-toggle,.prose h6>.fold-toggle{top:.68em}
 .prose li.outline-parent>p>.fold-toggle{left:-37px;top:.9em}
 .prose ul[data-type=taskList] li.outline-parent>div>p>.fold-toggle{left:-21px;top:.9em}
+/* Hierarchical numbers (1. / 1.1 / 2.1.1) replace the browser's markers on numbered lists. Each item reserves a gutter
+   as wide as its own number, so deeper levels indent naturally and long numbers never overlap the text. */
+.prose ol{padding-left:0}
+.prose ol>li[data-num]{list-style:none;position:relative;padding-left:var(--num-w,1.6em)}
+.prose ol>li[data-num]::before{content:attr(data-num);position:absolute;left:0;top:0;font-variant-numeric:tabular-nums;white-space:nowrap;user-select:none;pointer-events:none}
+.prose ol>li[data-num].outline-parent>p>.fold-toggle{left:-21px}
 .fold-toggle svg{width:10px;height:10px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .prose :is(h1,h2,h3,h4,h5,h6,li):hover>.fold-toggle,.prose li:hover>p>.fold-toggle,.prose li:hover>div>p>.fold-toggle,.fold-toggle[aria-expanded=false]{opacity:1}
 .fold-toggle[aria-expanded=false]{transform:none}
@@ -60,6 +66,7 @@ button:disabled{opacity:.35;cursor:default}
 .mm-node{position:absolute;height:28px;display:flex;align-items:center;gap:6px;padding:0 10px;font-size:13px;border:1px solid var(--line);background:var(--surface);border-radius:14px;cursor:default;animation:fade-in var(--t-fast) ease-out;transition:box-shadow var(--t-fast) ease,border-color var(--t-fast) ease,opacity var(--t-fast) ease}
 #mindmap:not(.readonly) .mm-node:not(.root){cursor:grab}
 .mm-node:hover{border-color:rgb(var(--tint)/.25)}
+.mm-num{flex:none;font-variant-numeric:tabular-nums;opacity:.6;font-weight:500}
 .mm-label{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mm-node.heading{font-weight:600}
 .mm-node.root{height:32px;margin-top:-2px;font-size:15px;font-weight:650;background:var(--ink);color:var(--paper);border-color:var(--ink);border-radius:8px}

@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, dialog, shell, screen, systemPreferences } = require('electron');
+const { app, BrowserWindow, Menu, ipcMain, dialog, shell, screen, systemPreferences } = require('electron');
 const fs = require('node:fs');
 const path = require('node:path');
 const { NoteStore } = require('./store.cjs');
@@ -70,6 +70,12 @@ function openNote(id) {
   win.once('ready-to-show', () => { win.setOpacity(0); win.show(); fade(win, 1, 180); });
   win.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
   win.webContents.on('will-navigate', event => event.preventDefault());
+  // The app handles its own zoom (mind map only). Chromium's page zoom would magnify the whole window and push the
+  // title-bar buttons off screen, so it stays at 100%: the default menu (whose View > Zoom owns Ctrl+= / Ctrl+-) is
+  // removed at startup, and wheel or pinch page zoom is undone.
+  win.webContents.setVisualZoomLevelLimits(1, 1).catch(() => {});
+  win.webContents.on('zoom-changed', () => win.webContents.setZoomLevel(0));
+  win.webContents.on('did-finish-load', () => win.webContents.setZoomLevel(0));
   win.on('close', event => {
     if (!win.allowClose) { event.preventDefault(); fadeClose(win); return; }
     try { store.update(win.noteId, { bounds: win.getBounds() }); } catch {}
@@ -86,6 +92,9 @@ if (!app.requestSingleInstanceLock()) app.quit();
 else {
   app.on('second-instance', launch);
   app.whenReady().then(() => {
+    // The menu bar is never shown. A minimal Edit-only menu keeps clipboard and undo shortcuts but drops the default
+    // View > Zoom entries (Ctrl+= / Ctrl+-), which magnified the whole window, and Window > Minimize (Ctrl+M).
+    Menu.setApplicationMenu(Menu.buildFromTemplate([{ role: 'editMenu' }]));
     store = new NoteStore(root);
     const sender = e => { const w = BrowserWindow.fromWebContents(e.sender); if (!w || !w.noteId) throw new Error('Invalid window'); return w; };
     ipcMain.handle('load', e => { const w = sender(e); refreshNotes(); return store.read(w.noteId); });

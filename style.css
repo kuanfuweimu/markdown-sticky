@@ -63,13 +63,16 @@ button:disabled{opacity:.35;cursor:default}
 .mm-canvas.settled .mm-node{animation:none}
 .mm-links{position:absolute;inset:0;overflow:visible;pointer-events:none}
 .mm-links path{fill:none;stroke:rgb(var(--tint)/.28);stroke-width:1.4}
-.mm-node{position:absolute;height:28px;display:flex;align-items:center;gap:6px;padding:0 10px;font-size:13px;border:1px solid var(--line);background:var(--surface);border-radius:14px;cursor:default;animation:fade-in var(--t-fast) ease-out;transition:box-shadow var(--t-fast) ease,border-color var(--t-fast) ease,opacity var(--t-fast) ease}
+.mm-node{position:absolute;min-height:28px;display:flex;align-items:center;gap:6px;padding:4.5px 10px;line-height:19px;font-size:13px;border:1px solid var(--line);background:var(--surface);border-radius:14px;cursor:default;animation:fade-in var(--t-fast) ease-out;transition:box-shadow var(--t-fast) ease,border-color var(--t-fast) ease,opacity var(--t-fast) ease}
 #mindmap:not(.readonly) .mm-node:not(.root){cursor:grab}
 .mm-node:hover{border-color:rgb(var(--tint)/.25)}
 .mm-num{flex:none;font-variant-numeric:tabular-nums;opacity:.6;font-weight:500}
-.mm-label{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* Full labels: wrap inside the node instead of cutting off with an ellipsis. */
+.mm-label{flex:1;min-width:0;white-space:normal;overflow-wrap:anywhere;word-break:break-word}
+.mm-node.wrap{align-items:flex-start;border-radius:12px}.mm-node.wrap .mm-num,.mm-node.wrap .mm-check,.mm-node.wrap .mm-fold{margin-top:1px}
+.mm-node.editing{align-items:center}
 .mm-node.heading{font-weight:600}
-.mm-node.root{height:32px;margin-top:-2px;font-size:15px;font-weight:650;background:var(--ink);color:var(--paper);border-color:var(--ink);border-radius:8px}
+.mm-node.root{min-height:32px;line-height:22px;font-size:15px;font-weight:650;background:var(--ink);color:var(--paper);border-color:var(--ink);border-radius:8px}
 .mm-node.root.virtual{background:var(--surface);color:var(--muted);border:1px dashed rgb(var(--tint)/.35)}
 .mm-node.done .mm-label{opacity:.5;text-decoration:line-through}
 .mm-node.collapsed{border-style:dashed}
@@ -83,8 +86,8 @@ button:disabled{opacity:.35;cursor:default}
 .mm-fold:hover{background:var(--press);color:var(--ink)}
 .mm-node.root .mm-fold{background:rgb(127 127 127/.3);color:inherit}
 .mm-node.dragging{opacity:.35}
-.mm-ghost{position:fixed;left:0;top:0;z-index:50;height:28px;display:flex;align-items:center;gap:6px;padding:0 10px;font-size:13px;border:1px solid var(--ink);border-radius:14px;background:var(--surface);color:var(--ink);box-shadow:0 8px 24px rgb(0 0 0/.18);pointer-events:none;opacity:.92}
-.mm-ghost .mm-label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mm-ghost{position:fixed;left:0;top:0;z-index:50;min-height:28px;display:flex;align-items:center;gap:6px;padding:4.5px 10px;line-height:19px;font-size:13px;border:1px solid var(--ink);border-radius:14px;background:var(--surface);color:var(--ink);box-shadow:0 8px 24px rgb(0 0 0/.18);pointer-events:none;opacity:.92}
+.mm-ghost .mm-label{white-space:normal;overflow-wrap:anywhere}
 .mm-node.drop-child{box-shadow:0 0 0 2px var(--ink);background:var(--hover)}
 .mm-node.drop-before:before,.mm-node.drop-after:after{content:"";position:absolute;left:6px;right:6px;height:3px;border-radius:2px;background:var(--ink)}
 .mm-node.drop-before:before{top:-6px}.mm-node.drop-after:after{bottom:-6px}

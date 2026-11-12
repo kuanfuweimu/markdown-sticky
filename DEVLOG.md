@@ -1,5 +1,17 @@
 # 开发日志
 
+## 2026-11-12 · v1.6.1 · 页面缩放与导图全文
+
+**反馈截图**：窗口内容整体放大，右上角按钮看不到；导图节点显示「工…」「LOGO修…」「素材…」。
+
+**原因**：Electron 默认菜单的 View › Zoom 绑定 Ctrl+= / Ctrl+−，Chromium 也会响应 Ctrl+滚轮与双指缩放，于是导图缩放的同时整页也被放大。节点宽度用字符数估算，与实际字体不符，CSS 又用省略号截断，粗体根节点估算偏差更大。
+
+**实现**：主进程换成仅含 Edit 的菜单（保留剪贴板和撤销快捷键，去掉缩放和 Ctrl+M），setVisualZoomLevelLimits(1,1)，并在 zoom-changed / 加载完成时复位到 100%。导图用 canvas measureText 按真实字体和字重测量，最大宽度 300px，超过则换行；布局按每个节点自己的高度堆叠，父节点对齐子节点中线，连线连到节点垂直中心。
+
+**验证**：51 项测试通过，新增测试确认长文字换行、节点变高、宽度封顶、节点不重叠。真实窗口效果需用户确认。
+
+---
+
 ## 2026-11-12 · v1.6.0 · 同窗口切换与内容预览
 
 **反馈**：在 All notes 点便签会开新小窗口；希望显示内容预览。另外 v1.5.0 安装被中止（关闭后 2 秒内程序被重新打开，脚本按设计不做改动），所以层级编号尚未生效，本版一并安装。
@@ -125,7 +137,9 @@
 
 ## English development log
 
-### 2026-11-12 · v1.6.0 · Same-window switching and previews
+### 2026-11-12 · v1.6.1 · Page zoom and full map labels
+
+**Feedback screenshot.** The whole window was magnified with the title-bar buttons off screen; map nodes read \### 2026-11-12 · v1.6.0 · Same-window switching and previews
 
 **Feedback.** Clicking a note in All notes opened a new small window; previews were wanted. The v1.5.0 install had also aborted (the app was reopened within 2 seconds of closing, so the script made no changes by design), so numbering was not active yet; this version installs both.
 

@@ -2,35 +2,55 @@ import { mindmapTree, isInside } from './mindmap.js';
 import { outlineKey } from './outline.js';
 import * as ops from './mindmap-edit.js';
 
-// Lays the outline out left to right: each column is as wide as its widest label, each leaf takes one row.
-const ROW = 36, GAP_X = 52, PAD = 28, MAX_W = 260, MIN_W = 40;
-export function labelWidth(text, size = 13) {
+// Lays the outline out left to right. Nodes show their whole label: text is measured with the real font, and
+// labels wider than MAX_W wrap onto more lines, so each node's height follows its text.
+const ROW_GAP = 8, GAP_X = 52, PAD = 28, MAX_W = 300, MIN_W = 40, LINE = 19, PAD_Y = 4.5;
+const FONT = '"Segoe UI Variable Text","Segoe UI","Microsoft YaHei UI",sans-serif';
+let ctx;
+function measure(text, size, weight) {
+  if (ctx === undefined) { try { ctx = (globalThis.OffscreenCanvas ? new OffscreenCanvas(1, 1) : globalThis.document?.createElement('canvas'))?.getContext?.('2d') || null; } catch { ctx = null; } }
+  if (ctx) { ctx.font = `${weight} ${size}px ${FONT}`; const w = ctx.measureText(text).width; if (w > 0 || !text) return w; }
   let w = 0;
   for (const ch of text) w += /[ᄀ-ᅟ⺀-꓏가-힣豈-﫿︰-﹏＀-｠￠-￦]/.test(ch) ? size : size * .56;
-  return Math.max(MIN_W, Math.min(MAX_W, Math.ceil(w) + 24));
+  return w;
+}
+export function labelWidth(text, size = 13, weight = 400) { return Math.max(MIN_W, Math.min(MAX_W, Math.ceil(measure(text, size, weight)) + 24)); }
+// Node box: width capped at MAX_W, height grows by wrapped lines.
+export function nodeBox(n, depth) {
+  const size = depth ? 13 : 15, weight = depth ? (n.kind === 'heading' ? 600 : 400) : 650;
+  const extra = (n.checked != null ? 20 : 0) + (n.num ? measure(n.num, 13, 500) + 6 : 0) + (n.children.length ? 24 : 0) + 22;
+  const text = Math.ceil(measure(n.label, size, weight)) + 2;
+  const w = Math.max(MIN_W, Math.min(MAX_W, text + extra));
+  const lines = Math.max(1, Math.ceil(text / Math.max(40, w - extra)));
+  const line = depth ? LINE : 22;
+  return { w, h: Math.round(lines * line + PAD_Y * 2 + (depth ? 0 : 2)), lines };
 }
 export function layoutMindmap(root, folded) {
   const nodes = [], cols = [];
   const visit = (n, depth, parent) => {
     const open = !(n.pos != null && folded.has(n.pos));
-    const prefix = n.checked != null ? 22 : 0;
-    const item = { n, depth, parent, w: labelWidth(n.label, depth ? 13 : 15) + prefix + (n.num ? n.num.length * 7.4 + 6 : 0), kids: [], collapsed: !open && n.children.length > 0 };
+    const item = { n, depth, parent, ...nodeBox(n, depth), kids: [], collapsed: !open && n.children.length > 0 };
     nodes.push(item); cols[depth] = Math.max(cols[depth] || 0, item.w);
     if (open) for (const c of n.children) item.kids.push(visit(c, depth + 1, item));
     return item;
   };
   const top = visit(root, 0, null);
-  let row = 0;
+  // Leaves stack top to bottom by their own heights; a parent is centred on its children.
+  let y = 0;
   const place = it => {
-    if (!it.kids.length) { it.y = row++ * ROW; return; }
+    if (!it.kids.length) { it.y = y; y += it.h + ROW_GAP; return; }
     it.kids.forEach(place);
-    it.y = (it.kids[0].y + it.kids.at(-1).y) / 2;
+    const first = it.kids[0], last = it.kids.at(-1);
+    it.y = (first.y + first.h / 2 + last.y + last.h / 2) / 2 - it.h / 2;
+    if (it.y + it.h + ROW_GAP > y) y = it.y + it.h + ROW_GAP;
   };
   place(top);
+  const minY = Math.min(...nodes.map(it => it.y));
   const x = [PAD];
   for (let d = 1; d < cols.length; d++) x[d] = x[d - 1] + cols[d - 1] + GAP_X;
-  for (const it of nodes) { it.x = x[it.depth]; it.y += PAD; }
-  return { nodes, width: x.at(-1) + cols.at(-1) + PAD * 2, height: row * ROW + PAD * 2 };
+  for (const it of nodes) { it.x = x[it.depth]; it.y += PAD - Math.min(0, minY); it.cy = it.y + it.h / 2; }
+  const bottom = Math.max(...nodes.map(it => it.y + it.h));
+  return { nodes, width: x.at(-1) + cols.at(-1) + PAD * 2, height: bottom + PAD };
 }
 
 const SVG = 'http://www.w3.org/2000/svg';
@@ -127,7 +147,7 @@ export class MindmapView {
     const svg = d.createElementNS(SVG, 'svg'); svg.setAttribute('width', width); svg.setAttribute('height', height); svg.setAttribute('class', 'mm-links');
     for (const it of nodes) {
       if (!it.parent) continue;
-      const x1 = it.parent.x + it.parent.w, y1 = it.parent.y + 14, x2 = it.x, y2 = it.y + 14, mx = (x1 + x2) / 2;
+      const x1 = it.parent.x + it.parent.w, y1 = it.parent.cy, x2 = it.x, y2 = it.cy, mx = (x1 + x2) / 2;
       const path = d.createElementNS(SVG, 'path');
       path.setAttribute('d', `M${x1} ${y1}C${mx} ${y1} ${mx} ${y2} ${x2} ${y2}`);
       svg.append(path);
@@ -141,7 +161,8 @@ export class MindmapView {
       el.dataset.key = keyOf(n.pos);
       el.setAttribute('role', 'treeitem'); el.setAttribute('aria-selected', String(n.pos === this.selected));
       if (canFold) el.setAttribute('aria-expanded', String(!it.collapsed));
-      el.style.cssText = `left:${it.x}px;top:${it.y}px;width:${it.w}px;--i:${Math.min(i, 30)}`;
+      el.style.cssText = `left:${it.x}px;top:${it.y}px;width:${it.w}px;min-height:${it.h}px;--i:${Math.min(i, 30)}`;
+      if (it.lines > 1) el.classList.add('wrap');
       el.title = (n.text || n.label) + (ro ? '' : '\nDouble-click or F2 to edit · Drag to move');
       if (n.checked != null) {
         const c = d.createElement('span'); c.className = 'mm-check'; c.setAttribute('role', 'checkbox'); c.setAttribute('aria-checked', String(n.checked)); c.title = n.checked ? 'Mark not done' : 'Mark done';
@@ -200,7 +221,7 @@ export class MindmapView {
     input.className = 'mm-input'; input.value = node.virtual ? '' : node.text; input.placeholder = node.virtual ? 'Title' : '';
     input.setAttribute('aria-label', 'Edit node');
     const base = parseFloat(el.style.width);
-    const grow = () => { el.style.width = Math.max(base, Math.min(420, labelWidth(input.value || ' ', node.kind === 'root' ? 15 : 13) + 8)) + 'px'; };
+    const grow = () => { el.style.width = Math.max(base, Math.min(520, labelWidth(input.value || ' ', node.kind === 'root' ? 15 : 13) + 60)) + 'px'; };
     el.querySelector('.mm-label').replaceWith(input); el.classList.add('editing');
     this.editing = { pos, isNew, input };
     grow(); input.addEventListener('input', grow);
@@ -279,7 +300,7 @@ export class MindmapView {
     if (!p.drag) {
       const node = ops.findNode(this.tree, p.pos);
       if (Math.hypot(e.clientX - p.x, e.clientY - p.y) < 5 || this.readOnly() || !node || !draggable(node)) return;
-      const ghost = p.el.cloneNode(true); ghost.className = 'mm-ghost'; ghost.style.cssText = `width:${p.el.style.width}`;
+      const ghost = p.el.cloneNode(true); ghost.className = 'mm-ghost'; ghost.style.cssText = `width:${p.el.style.width};min-height:${p.el.style.minHeight}`;
       this.host.ownerDocument.body.append(ghost);
       p.el.classList.add('dragging'); this.host.classList.add('dragging');
       p.drag = { node, ghost };

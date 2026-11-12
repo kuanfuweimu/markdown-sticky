@@ -117,7 +117,7 @@ test('mind map layout hides folded branches and keeps parents centred on childre
   assert.equal(open.nodes.length - closed.nodes.length, 4);
   assert.ok(closed.nodes.find(n => n.n === work).collapsed);
   const a = open.nodes.find(n => n.n.label === '项目 A');
-  assert.equal(a.y, (a.kids[0].y + a.kids[1].y) / 2);
+  assert.equal(a.cy, (a.kids[0].cy + a.kids[1].cy) / 2);
   assert.ok(open.nodes.every(n => !n.parent || n.x > n.parent.x + n.parent.w));
   e.destroy();
 });
@@ -350,4 +350,18 @@ test('All notes opens a note in the same window and shows a content preview', as
   d.getElementById('search').value = '首页'; d.getElementById('search').dispatchEvent(new w.Event('input'));
   assert.equal(d.querySelectorAll('.noteCard').length, 1, 'search also matches preview text');
   w.close();
+});
+
+test('mind map nodes keep their whole label and wrap long text instead of cutting it off', () => {
+  const long = '素材来源缺口很大，需要整理所有参考图和工程文件，再和设计确认首页的最终版本以及发布时间';
+  const e = rich(`# 工作清单\n\n1. UI调整\n2. ${long}\n3. 素材`);
+  const t = mindmapTree(e.state.doc);
+  const { nodes } = layoutMindmap(t, new Set());
+  const big = nodes.find(n => n.n.label === long);
+  assert.ok(big.lines >= 2, 'long label wraps');
+  assert.ok(big.h > nodes.find(n => n.n.label === 'UI调整').h, 'wrapped node is taller');
+  assert.ok(big.w <= 300, 'width is capped');
+  const sorted = nodes.filter(n => n.depth === 1).sort((a, b) => a.y - b.y);
+  for (let i = 1; i < sorted.length; i++) assert.ok(sorted[i].y >= sorted[i - 1].y + sorted[i - 1].h, 'nodes never overlap');
+  e.destroy();
 });

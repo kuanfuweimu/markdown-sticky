@@ -1,5 +1,12 @@
 # 更新日志
 
+## 1.6.1 — 2026-11-12
+
+### 修复
+
+- 整个窗口被放大、右上角按钮跑出窗口：Ctrl+= / Ctrl+− 和 Ctrl+滚轮会同时触发浏览器自带的页面缩放。现在页面固定 100%，缩放只作用于思维导图。
+- 思维导图节点文字被截断成「工…」「素材…」：改为按真实字体测量宽度，长文字自动换行，节点高度随内容变化，始终显示全文。
+
 ## 1.6.0 — 2026-11-12
 
 ### 改进
@@ -104,7 +111,11 @@
 
 ## English changelog
 
-### 1.6.0 — 2026-11-12
+### 1.6.1 — 2026-11-12
+
+**Fixes**
+- The whole window got magnified and the title-bar buttons went off screen: Ctrl+= / Ctrl+− and Ctrl+wheel also triggered Chromium's page zoom. The page now stays at 100% and zoom applies only to the mind map.
+- Mind-map labels were cut off (\### 1.6.0 — 2026-11-12
 
 **Improvements**
 - Clicking a note in All notes opens it in the same window instead of a new small window, saving first. If that note is already open elsewhere, that window comes forward.

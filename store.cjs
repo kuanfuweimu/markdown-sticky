@@ -3,6 +3,19 @@ const path = require('node:path');
 const { randomUUID, createHash } = require('node:crypto');
 const DEFAULT_TONE = 100; // new notes start dark
 const revisionOf = content => createHash('sha256').update(content).digest('hex');
+// Plain-text preview for All notes: Markdown markers removed, task state kept as ☐/☑, up to 160 characters.
+function previewOf(lines) {
+  const out = [];
+  for (const raw of lines) {
+    const s = raw.replace(/^\s*>+\s?/, '').replace(/^\s*#{1,6}\s+/, '')
+      .replace(/^\s*[-*+]\s+\[( |x|X)\]\s+/, (_, c) => c === ' ' ? '☐ ' : '☑ ').replace(/^\s*(?:[-*+]|\d+[.)])\s+/, '')
+      .replace(/!\[[^\]]*\]\([^)]*\)/g, '').replace(/\[([^\]]+)\]\([^)]*\)/g, '$1').replace(/[*_`~]+/g, '').replace(/^\s*\|?[\s:|-]+\|?\s*$/, '').trim();
+    if (s && !/^```/.test(raw.trim())) out.push(s);
+    if (out.join(' · ').length > 160) break;
+  }
+  const text = out.join(' · ');
+  return text.length > 160 ? text.slice(0, 159) + '…' : text;
+}
 class NoteStore {
   constructor(root) {
     this.root = root;
@@ -77,8 +90,10 @@ class NoteStore {
       let content;
       try { content = fs.readFileSync(this.file(m.id), 'utf8'); }
       catch (error) { if (error.code === 'ENOENT') return []; throw error; }
-      const title = content.split(/\r?\n/).find(s => s.trim())?.replace(/^#+\s*/, '').slice(0, 70) || 'Untitled';
-      return [{ ...m, title: title + (m.conflictOf ? ' · Local copy' : '') }];
+      const lines = content.split(/\r?\n/);
+      const first = lines.findIndex(s => s.trim());
+      const title = lines[first]?.replace(/^#+\s*/, '').slice(0, 70) || 'Untitled';
+      return [{ ...m, title: title + (m.conflictOf ? ' · Local copy' : ''), preview: previewOf(lines.slice(first + 1)) }];
     }).sort((a,b) => b.updated - a.updated);
   }
   create(mode = 'rich', content = '') {

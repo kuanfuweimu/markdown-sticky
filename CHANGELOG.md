@@ -1,5 +1,16 @@
 # 更新日志
 
+## 1.6.0 — 2026-11-12
+
+### 改进
+
+- All notes 中点击便签在当前窗口打开，不再弹出新的小窗口；切换前自动保存。若该便签已在其他窗口打开，则切到那个窗口。
+- All notes 显示两行内容预览（去掉 Markdown 符号，待办显示 ☐/☑），搜索也匹配预览内容；当前便签有边框标记。
+
+### 维护
+
+- 新增 2 项测试，共 50 项通过。
+
 ## 1.5.0 — 2026-11-11
 
 ### 新功能
@@ -92,6 +103,15 @@
 ---
 
 ## English changelog
+
+### 1.6.0 — 2026-11-12
+
+**Improvements**
+- Clicking a note in All notes opens it in the same window instead of a new small window, saving first. If that note is already open elsewhere, that window comes forward.
+- All notes shows a two-line content preview (Markdown markers removed, to-dos as ☐/☑); search matches previews too; the current note is outlined.
+
+**Maintenance**
+- Added 2 tests; all 50 pass.
 
 ### 1.5.0 — 2026-11-11
 

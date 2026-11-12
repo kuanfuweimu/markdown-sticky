@@ -106,6 +106,22 @@ else {
     ipcMain.handle('list', e => { sender(e); refreshNotes(); return store.list(); });
     ipcMain.handle('new', e => { sender(e); openNote(store.create('rich').id); notifyNotesChanged(); });
     ipcMain.handle('open', (e, id) => { sender(e); refreshNotes(); store.update(id, { archived: false }); openNote(id); notifyNotesChanged(); });
+    // Opening from All notes shows the note in this same window. If it is already open elsewhere, that window is
+    // brought forward instead so one note never has two editors.
+    ipcMain.handle('switch', (e, id) => {
+      const w = sender(e); refreshNotes();
+      if (id === w.noteId) return store.read(id);
+      const other = windows.get(id);
+      if (other && other !== w) { if (other.isMinimized()) other.restore(); other.show(); other.focus(); return null; }
+      store.read(id);
+      try { store.update(w.noteId, { bounds: w.getBounds() }); } catch {}
+      if (store.list().find(n => n.id === id)?.archived) store.update(id, { archived: false });
+      windows.delete(w.noteId); w.noteId = id; windows.set(id, w);
+      const note = store.read(id);
+      w.setAlwaysOnTop(!!note.pinned); w.setBackgroundColor(toneHex(note.tone));
+      notifyNotesChanged();
+      return note;
+    });
     ipcMain.handle('minimize', e => sender(e).minimize());
     ipcMain.handle('close', e => sender(e).close());
     ipcMain.handle('folder', e => { sender(e); return shell.openPath(path.join(root, 'notes')); });

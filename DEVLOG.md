@@ -1,5 +1,15 @@
 # 开发日志
 
+## 2026-11-12 · v1.6.0 · 同窗口切换与内容预览
+
+**反馈**：在 All notes 点便签会开新小窗口；希望显示内容预览。另外 v1.5.0 安装被中止（关闭后 2 秒内程序被重新打开，脚本按设计不做改动），所以层级编号尚未生效，本版一并安装。
+
+**实现**：新增 switch IPC，把当前窗口重新绑定到目标便签（保存原便签窗口位置、更新置顶和背景色）；目标已在其他窗口打开时只聚焦那个窗口。渲染层 showNote() 销毁并重建编辑器、恢复该便签的色调和视图；切换前 prepareClose() 保存当前内容。store.list() 生成纯文本预览（去掉标题、列表、链接、强调等标记，待办转为 ☐/☑，最多 160 字）。
+
+**验证**：50 项测试通过，覆盖同窗口切换不开新窗口、切换前保存、色调和视图跟随、预览内容和搜索。
+
+---
+
 ## 2026-11-11 · v1.5.0 · 层级编号
 
 **需求**：编号列表显示为 1.1、1.2、2.1.1 这样的层级结构。
@@ -114,6 +124,14 @@
 ---
 
 ## English development log
+
+### 2026-11-12 · v1.6.0 · Same-window switching and previews
+
+**Feedback.** Clicking a note in All notes opened a new small window; previews were wanted. The v1.5.0 install had also aborted (the app was reopened within 2 seconds of closing, so the script made no changes by design), so numbering was not active yet; this version installs both.
+
+**Implementation.** A new switch IPC rebinds the current window to the target note (saving the old note's bounds, updating always-on-top and background colour); if the target is already open elsewhere, that window is focused instead. The renderer's showNote() rebuilds the editor with the note's tone and view; prepareClose() saves first. store.list() builds a plain-text preview (heading, list, link and emphasis markers removed, to-dos as ☐/☑, up to 160 characters).
+
+**Validation.** 50 tests pass, covering same-window switching without a new window, save before switch, tone and view following the note, previews and preview search.
 
 ### 2026-11-11 · v1.5.0 · Hierarchical numbering
 

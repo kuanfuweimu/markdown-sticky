@@ -51,7 +51,7 @@ New and changed note files are discovered while the app runs, within about a sec
 
 For code or AI tools writing directly to this folder, use UTF-8 and the app's `<UUID>.md` filename convention; write to a temporary file and rename it into place. No manual index edit or app restart is needed. Arbitrarily named Markdown files can still be added through Import.
 
-Closing a window keeps its content; reopen it from All notes. Archiving never deletes the file; turn on "Show archived notes" in All notes and click a note to restore it. Import creates a copy; export lets you choose a readable file name.
+All notes shows a short preview of each note; search matches titles and previews. Clicking a note opens it in the same window (if it is already open in another window, that window comes forward). Use ＋ or Ctrl+N for a new window. Closing a window keeps its content; reopen it from All notes. Archiving never deletes the file; turn on "Show archived notes" in All notes and click a note to restore it. Import creates a copy; export lets you choose a readable file name.
 
 To back up or move the app, quit every note window first, then copy the whole folder. Do not move the `.exe` on its own.
 
@@ -122,7 +122,7 @@ Node.js 24+: `npm ci` → `npm run build` → `npm test`. `npm run icon` regener
 
 代码或 AI 工具直接写入该目录时，使用 UTF-8 和 `<UUID>.md` 文件名，先写临时文件，再重命名到目标位置。不必手改索引或重启。任意文件名的 Markdown 仍可通过 Import 导入。
 
-关窗不会删除内容，可在 All notes 重开。归档不删除文件；开启 Show archived notes 后点击便签即可恢复。Import 创建副本；Export 可指定易读文件名。
+All notes 显示每张便签的内容预览，搜索同时匹配标题和预览。点击便签会在当前窗口打开（如果已在其他窗口打开，则切到那个窗口）；需要新窗口用 ＋ 或 Ctrl+N。关窗不会删除内容，可在 All notes 重开。归档不删除文件；开启 Show archived notes 后点击便签即可恢复。Import 创建副本；Export 可指定易读文件名。
 
 备份或移动应用前，先退出全部便签窗口，再复制整个文件夹，不要只移动 `.exe`。
 

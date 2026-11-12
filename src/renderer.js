@@ -184,16 +184,37 @@ function format(kind) {
   ({ heading: () => rich.isActive('heading') ? chain.setParagraph().run() : chain.setHeading({ level: autoHeadingLevel(rich.state) }).run(), bold: () => chain.toggleBold().run(), bullet: () => chain.toggleBulletList().run(), ordered: () => chain.toggleOrderedList().run(), task: () => chain.toggleTaskList().run() })[kind]();
 }
 async function refreshList(animate = false) { list = await api.list(); drawList(animate); }
+// Puts a note into this window: the first load, or switching notes from All notes without opening a new window.
+function showNote(data, first = false) {
+  if (rich) { rich.destroy(); $('rich').replaceChildren(); }
+  if (mindmap) { mindmap.editing = null; $('mindmap').replaceChildren(); mindmap.selected = null; }
+  note = data; content = note.content; dirty = false; editVersion++;
+  setTone(note.tone); $('pin').classList.toggle('active', !!note.pinned); $('pin').setAttribute('aria-pressed', String(!!note.pinned));
+  view = note.view === 'mindmap' ? 'mindmap' : 'outline';
+  $('mindmap').hidden = view !== 'mindmap'; $('rich').hidden = view === 'mindmap';
+  renderEditor(first || view === 'outline');
+  $('editorArea').classList.remove('swap-in'); void $('editorArea').offsetWidth; $('editorArea').classList.add('swap-in');
+  status('Saved locally');
+}
+async function openFromList(id) {
+  if (note && id === note.id) { dismiss($('drawer')); return; }
+  if (!prepareClose()) return;
+  const data = await api.switch(id);
+  dismiss($('drawer'));
+  if (data) showNote(data);
+}
 function drawList(animate = false) {
   const term = $('search').value.toLowerCase();
-  const items = list.filter(n => !!n.archived === $('showArchived').checked && n.title.toLowerCase().includes(term));
+  const items = list.filter(n => !!n.archived === $('showArchived').checked && (n.title + ' ' + (n.preview || '')).toLowerCase().includes(term));
   $('noteList').replaceChildren();
   $('noteList').classList.toggle('stagger', animate);
   for (const [i, n] of items.entries()) {
-    const button = document.createElement('button'); button.className = 'noteCard'; applyTone(button, n.tone); button.style.setProperty('--i', i);
+    const button = document.createElement('button'); button.className = 'noteCard' + (note && n.id === note.id ? ' current' : ''); applyTone(button, n.tone); button.style.setProperty('--i', i);
     const title = document.createElement('strong'); title.textContent = n.title;
-    const detail = document.createElement('span'); detail.textContent = `${new Date(n.updated).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}${n.archived ? ' · Click to restore' : ''}`;
-    button.append(title, detail); button.onclick = () => api.open(n.id).catch(report); $('noteList').append(button);
+    const preview = document.createElement('p'); preview.className = 'preview'; preview.textContent = n.preview || 'Empty note';
+    if (!n.preview) preview.classList.add('empty');
+    const detail = document.createElement('span'); detail.textContent = `${new Date(n.updated).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}${note && n.id === note.id ? ' · Open here' : ''}${n.archived ? ' · Click to restore' : ''}`;
+    button.append(title, preview, detail); button.onclick = () => openFromList(n.id).catch(report); $('noteList').append(button);
   }
   if (!items.length) $('noteList').textContent = 'No notes here yet.';
 }
@@ -281,10 +302,7 @@ document.addEventListener('change', e => {
     : [{ transform: 'scale(.85)' }, { transform: 'scale(1)' }], { duration: 280, easing: 'ease-out' });
 });
 api.load().then(data => {
-  note = data; content = note.content;
-  setTone(note.tone); $('pin').classList.toggle('active', note.pinned); $('pin').setAttribute('aria-pressed', String(!!note.pinned));
-  if (note.view === 'mindmap') { view = 'mindmap'; $('mindmap').hidden = false; $('rich').hidden = true; }
-  renderEditor(); $('editorArea').classList.add('swap-in'); status('Saved locally');
+  showNote(data, true);
   unsubscribe = api.onChanged?.(synchronize);
   synchronize();
 }).catch(report);

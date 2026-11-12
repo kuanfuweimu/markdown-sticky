@@ -324,3 +324,30 @@ test('mind map nodes show the same hierarchical numbers', async () => {
   assert.deepEqual([...d.querySelectorAll('.mm-node .mm-num')].map(n => n.textContent), ['1', '1.1', '1.1.1']);
   w.close();
 });
+
+test('All notes opens a note in the same window and shows a content preview', async () => {
+  const { w, d, saved, tick } = await openMap('# 本周\n\n- 写周报');
+  const notes = { test: { id: 'test', tone: 100, content: '# 本周\n\n- 写周报', updated: 2, title: '本周', preview: '写周报' },
+           b: { id: 'b', tone: 0, view: 'mindmap', content: '# 设计\n\n1. 原型\n   1. 首页', updated: 1, title: '设计', preview: '原型 · 首页' } };
+  let opened = 0, switched = [];
+  w.notes.list = async () => Object.values(notes).map(({ content, ...n }) => n);
+  w.notes.open = async () => { opened++; };
+  w.notes.switch = async id => { switched.push(id); return { ...notes[id], revision: 'r' }; };
+  void notes.test;
+  d.getElementById('library').click(); await tick(50);
+  const cards = [...d.querySelectorAll('.noteCard')];
+  assert.deepEqual(cards.map(c => c.querySelector('.preview').textContent), ['写周报', '原型 · 首页']);
+  assert.ok(cards[0].classList.contains('current'));
+  d.getElementById('docTitle').value = '本周计划'; d.getElementById('docTitle').dispatchEvent(new w.Event('input'));
+  cards[1].click(); await tick(60);
+  assert.equal(opened, 0, 'no new window');
+  assert.deepEqual(switched, ['b']);
+  assert.match(saved.at(-1), /^# 本周计划/, 'unsaved edits are saved before switching');
+  assert.equal(d.getElementById('docTitle').value, '设计');
+  assert.equal(d.getElementById('mindmap').hidden, false, 'switched note opens in its own last view');
+  assert.deepEqual([...d.querySelectorAll('.mm-num')].map(n => n.textContent), ['1', '1.1']);
+  assert.equal(d.body.style.colorScheme, 'light', 'tone follows the switched note');
+  d.getElementById('search').value = '首页'; d.getElementById('search').dispatchEvent(new w.Event('input'));
+  assert.equal(d.querySelectorAll('.noteCard').length, 1, 'search also matches preview text');
+  w.close();
+});

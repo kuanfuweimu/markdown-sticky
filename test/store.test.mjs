@@ -15,6 +15,7 @@ test('save, backup, restart, metadata, archive and restore', () => {
   assert.equal(restart.read(note.id).view,'mindmap');
   assert.equal(restart.read(note.id).content,'# 更新\n\n- [x] 完成');
   assert.equal(restart.list()[0].archived,true);
+  assert.equal(restart.list()[0].preview,'☑ 完成','list shows a plain-text preview');
   assert.equal(restart.list()[0].tone,100);
   restart.update(note.id,{archived:false}); assert.equal(restart.list()[0].archived,false);
   assert.throws(() => restart.read('../../bad'));

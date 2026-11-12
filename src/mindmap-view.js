@@ -79,12 +79,19 @@ export class MindmapView {
     host.addEventListener('keydown', e => this.key(e));
     // Ctrl+wheel and trackpad pinch (which Chromium reports as Ctrl+wheel) zoom toward the cursor.
     // Small trackpad deltas give small steps, so pinching feels continuous rather than notched.
+    // The wheel zooms toward the cursor, no modifier needed, like most mind-map apps; Ctrl+wheel and trackpad pinch
+    // (reported as Ctrl+wheel) do the same. Shift+wheel scrolls sideways. Small trackpad deltas give small steps.
     host.addEventListener('wheel', e => {
-      if (!e.ctrlKey) return;
+      if (this.editing) return;
       e.preventDefault();
-      const delta = e.deltaMode === 1 ? e.deltaY * 33 : e.deltaY;
+      if (e.shiftKey && !e.ctrlKey) { host.scrollLeft += e.deltaY || e.deltaX; return; }
+      const delta = e.deltaMode === 1 ? e.deltaY * 33 : e.deltaMode === 2 ? e.deltaY * 400 : e.deltaY;
+      if (!delta) return;
       this.zoomTo(this.targetZoom * Math.exp(-Math.max(-60, Math.min(60, delta)) * .0035), e.clientX, e.clientY);
     }, { passive: false });
+    // Middle button never starts Chromium's autoscroll here; it pans instead (see down()).
+    host.addEventListener('mousedown', e => { if (e.button === 1) e.preventDefault(); });
+    host.addEventListener('auxclick', e => { if (e.button === 1) e.preventDefault(); });
     this.targetZoom = 1; this.zoomFrame = 0;
   }
   get editor() { return this.getEditor(); }
@@ -290,6 +297,12 @@ export class MindmapView {
   }
 
   down(e) {
+    // Middle-button drag pans from anywhere, even over a node.
+    if (e.button === 1 && !this.editing) {
+      e.preventDefault();
+      this.press = { pan: true, x: e.clientX, y: e.clientY, left: this.host.scrollLeft, top: this.host.scrollTop };
+      this.host.classList.add('panning'); return;
+    }
     if (e.button !== 0 || this.editing || e.target.closest?.('input')) return;
     const el = e.target.closest?.('.mm-node');
     this.host.focus({ preventScroll: true });

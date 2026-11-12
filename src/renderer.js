@@ -104,7 +104,7 @@ function updateChrome() {
   document.querySelectorAll('[data-format]').forEach(b => b.disabled = readOnly || map);
   $('viewToggle').setAttribute('aria-pressed', String(map)); $('viewToggle').classList.toggle('active', map);
   $('viewToggle').title = map ? 'Back to outline · Ctrl+Shift+M' : 'Mind map · Ctrl+Shift+M';
-  $('hint').textContent = map ? (readOnly ? 'Read-only note · Drag the background to move' : 'Tab child · Enter sibling · Double-click edit · Drag to move')
+  $('hint').textContent = map ? (readOnly ? 'Read-only note · Wheel to zoom · Drag the background to move' : 'Wheel zoom · Tab child · Enter sibling · Double-click edit')
     : readOnly ? 'Has tables, images or HTML: read-only to keep it intact' : 'Tab to indent · Ctrl+↑/↓ to fold';
 }
 function scheduleMap() { if (!mapFrame) mapFrame = requestAnimationFrame(() => { mapFrame = 0; if (view === 'mindmap') drawMindmap(); }); }

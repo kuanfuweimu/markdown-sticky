@@ -1,5 +1,12 @@
 # 更新日志
 
+## 1.7.1 — 2026-11-12
+
+### 改进
+
+- 思维导图里直接滚动鼠标滚轮即可缩放（以光标为中心，平滑过渡），不必按 Ctrl；Shift+滚轮横向滚动。
+- 按住鼠标中键拖动可平移画布，在节点上也可以；中键不会触发浏览器的自动滚动。
+
 ## 1.7.0 — 2026-11-12
 
 ### 新功能
@@ -125,6 +132,12 @@
 ---
 
 ## English changelog
+
+### 1.7.1 — 2026-11-12
+
+**Improvements**
+- In the mind map the plain mouse wheel zooms toward the cursor with easing, no Ctrl needed; Shift+wheel scrolls sideways.
+- Hold the middle button and drag to pan, even over a node; the middle button no longer starts Chromium autoscroll.
 
 ### 1.7.0 — 2026-11-12
 

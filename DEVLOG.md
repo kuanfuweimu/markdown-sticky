@@ -1,5 +1,15 @@
 # 开发日志
 
+## 2026-11-12 · v1.7.1 · 滚轮缩放与中键平移
+
+**需求**：导图加入中键缩放效果。理解为鼠标滚轮直接缩放（多数导图软件的做法），同时让中键拖动用于平移。
+
+**实现**：滚轮事件不再要求 Ctrl，沿用 v1.4.1 的平滑缩放与光标锚点；按行/页为单位的滚轮增量换算成像素；Shift+滚轮横向滚动；节点编辑时不拦截滚轮。中键 pointerdown 从任意位置开始平移，并阻止 mousedown/auxclick 默认行为以避免 Chromium 自动滚动。
+
+**验证**：55 项测试通过，新增测试确认无修饰键滚轮放大、中键在节点上也能平移、中键不触发编辑。
+
+---
+
 ## 2026-11-12 · v1.7.0 · 全列表编号与待办进度
 
 **需求**：所有项目都要显示数字序列（用户定为应用铁律）；思考待办如何与折叠、编号结合；去掉 B 按钮。
@@ -146,6 +156,14 @@
 ---
 
 ## English development log
+
+### 2026-11-12 · v1.7.1 · Wheel zoom and middle-button pan
+
+**Request.** Add middle-wheel zoom to the map. Read as the plain mouse wheel zooming (as in most mind-map apps), with middle-button drag panning.
+
+**Implementation.** Wheel no longer requires Ctrl and reuses the v1.4.1 eased, cursor-anchored zoom; line/page delta modes convert to pixels; Shift+wheel scrolls sideways; wheel is ignored during a label edit. Middle-button pointerdown pans from anywhere, and mousedown/auxclick defaults are blocked so Chromium autoscroll never starts.
+
+**Validation.** 55 tests pass, including unmodified wheel zoom, middle-button pan over a node, and no edit on middle click.
 
 ### 2026-11-12 · v1.7.0 · Numbers everywhere and to-do progress
 

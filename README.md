@@ -22,7 +22,8 @@ Open **Markdown Sticky** from the Start menu, or double-click `win-unpacked/Mark
 | Fold / open everything | Ctrl+Shift+↑ / Ctrl+Shift+↓ |
 | Heading down / up a level | Tab / Shift+Tab on a heading |
 | Outline ↔ mind map | Ctrl+Shift+M |
-| Zoom mind map | Ctrl+= / Ctrl+− / Ctrl+0 |
+| Zoom mind map | Mouse wheel (toward the cursor) or Ctrl+= / Ctrl+− / Ctrl+0 |
+| Pan mind map | Drag the background, or hold the middle button and drag |
 | Light ↔ dark | Ctrl+Shift+L |
 
 ## Numbering and to-dos
@@ -93,7 +94,8 @@ Node.js 24+: `npm ci` → `npm run build` → `npm test`. `npm run icon` regener
 | 全部折叠 / 全部展开 | Ctrl+Shift+↑ / Ctrl+Shift+↓ |
 | 标题降级 / 升级 | 在标题上按 Tab / Shift+Tab |
 | 大纲 ↔ 思维导图 | Ctrl+Shift+M |
-| 缩放思维导图 | Ctrl+= / Ctrl+− / Ctrl+0 |
+| 缩放思维导图 | 鼠标滚轮（以光标为中心）或 Ctrl+= / Ctrl+− / Ctrl+0 |
+| 平移思维导图 | 拖动空白处，或按住鼠标中键拖动 |
 | 浅色 ↔ 深色 | Ctrl+Shift+L |
 
 ### 层级编号与待办

@@ -400,3 +400,24 @@ test('branches show done / total of the to-dos inside them, in the outline and t
   assert.equal(nodeEl('周报').querySelector('.mm-num').textContent, '1.1');
   w.close();
 });
+
+test('mind map: plain wheel zooms, middle-button drag pans', async () => {
+  const { w, d, map, nodeEl, tick } = await openMap('# 计划\n\n- 工作\n- 生活');
+  d.getElementById('viewToggle').click(); await tick();
+  const canvas = d.querySelector('.mm-canvas');
+  map.dispatchEvent(new w.WheelEvent('wheel', { deltaY: -100, bubbles: true, cancelable: true, clientX: 40, clientY: 40 }));
+  await tick(600);
+  const z = parseFloat(canvas.style.transform.match(/scale\(([\d.]+)\)/)[1]);
+  assert.ok(z > 1.1, 'wheel without Ctrl zooms in, z=' + z);
+  let scrolled = 0;
+  Object.defineProperty(map, 'scrollLeft', { get: () => scrolled, set: v => { scrolled = v; }, configurable: true });
+  const node = nodeEl('工作');
+  node.dispatchEvent(new w.MouseEvent('pointerdown', { bubbles: true, button: 1, clientX: 200, clientY: 100 }));
+  assert.ok(map.classList.contains('panning'), 'middle button starts panning even over a node');
+  d.dispatchEvent(new w.MouseEvent('pointermove', { bubbles: true, clientX: 150, clientY: 100 }));
+  assert.equal(scrolled, 50);
+  d.dispatchEvent(new w.MouseEvent('pointerup', { bubbles: true, button: 1, clientX: 150, clientY: 100 }));
+  assert.ok(!map.classList.contains('panning'));
+  assert.equal(d.querySelector('.mm-input'), null, 'middle click never edits');
+  w.close();
+});

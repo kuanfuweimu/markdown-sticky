@@ -1,5 +1,20 @@
 # 更新日志
 
+## 1.7.0 — 2026-11-12
+
+### 新功能
+
+- 所有列表项都显示层级编号（1. / 1.1 / 1.1.1），包括项目符号和待办；大纲与导图一致。中间隔着段落或标题时重新从 1 开始。
+- 待办与折叠结合：包含待办的分支在行尾显示完成进度（如 2/5），统计分支内全部待办，全部完成显示 ✓；导图节点同样显示，勾选后实时更新。
+
+### 调整
+
+- 工具栏去掉 B（加粗）按钮；Ctrl+B 仍可用，已有的粗体不受影响。
+
+### 维护
+
+- 新增 3 项测试，共 54 项通过。编号规则写入 AGENTS.md。
+
 ## 1.6.1 — 2026-11-12
 
 ### 修复
@@ -110,6 +125,18 @@
 ---
 
 ## English changelog
+
+### 1.7.0 — 2026-11-12
+
+**Features**
+- Every list item shows a hierarchical number (1. / 1.1 / 1.1.1), bullets and to-dos included, in the outline and the map. A paragraph or heading between lists restarts at 1.
+- To-dos meet folding: branches containing to-dos show done / total (e.g. 2/5) at the end of their line, counting all to-dos inside, with ✓ when complete; map nodes show the same and update as you check items.
+
+**Changes**
+- Removed the B (bold) toolbar button; Ctrl+B still works and existing bold text is unchanged.
+
+**Maintenance**
+- Added 3 tests; all 54 pass. The numbering rule is recorded in AGENTS.md.
 
 ### 1.6.1 — 2026-11-12
 

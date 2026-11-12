@@ -42,35 +42,75 @@ const toggleWidget = (folded, owner) => view => {
   return b;
 };
 
-// Legal-style numbers for nested ordered lists: 1. → 1.1 → 1.1.1. A numbered list inside a bullet or to-do list
-// starts a fresh sequence, and each list honours its own start number. Display only: the Markdown stays standard.
+// App rule: every list item shows a legal-style number, 1. → 1.1 → 1.1.1, whether it is a numbered item, a bullet
+// or a to-do. Nesting continues the parent's number. Adjacent lists in the same place share one sequence; any other
+// block in between (a heading or paragraph) starts a new one. A numbered list keeps its own start number.
+// Display only: the Markdown stays standard.
 export function outlineNumbers(doc) {
   const map = new Map();
-  const walk = (node, start, prefix) => node.forEach((child, offset) => {
-    const pos = start + offset;
-    if (child.type.name === 'orderedList') {
-      let n = Number(child.attrs.start) || 1;
-      child.forEach((item, io) => {
-        const ipos = pos + 1 + io, num = prefix ? `${prefix}.${n}` : String(n);
-        map.set(ipos, num); n++;
-        walk(item, ipos + 1, num);
-      });
-    } else if (LIST.has(child.type.name)) child.forEach((item, io) => walk(item, pos + 1 + io + 1, ''));
-    else if (!child.isTextblock && !child.isAtom) walk(child, pos + 1, prefix);
-  });
+  const walk = (node, start, prefix) => {
+    let n = 0;
+    node.forEach((child, offset) => {
+      const pos = start + offset;
+      if (LIST.has(child.type.name)) {
+        if (!n && child.type.name === 'orderedList') n = (Number(child.attrs.start) || 1) - 1;
+        child.forEach((item, io) => {
+          const ipos = pos + 1 + io, num = prefix ? `${prefix}.${++n}` : String(++n);
+          map.set(ipos, num);
+          walk(item, ipos + 1, num);
+        });
+      } else {
+        n = 0;
+        if (!child.isTextblock && !child.isAtom) walk(child, pos + 1, prefix);
+      }
+    });
+  };
   walk(doc, 0, '');
   return map;
 }
+// To-do progress for every foldable branch that contains to-dos: done / total of all to-dos inside it.
+export function todoProgress(doc, items) {
+  const out = new Map();
+  const count = (from, to) => {
+    let done = 0, total = 0;
+    doc.nodesBetween(from, to, (node, pos) => {
+      if (pos < from) return true;
+      if (node.type.name === 'taskItem') { total++; if (node.attrs.checked) done++; }
+      return true;
+    });
+    return { done, total };
+  };
+  for (const it of items) {
+    const r = count(it.hideFrom, it.end);
+    if (r.total) out.set(it.pos, r);
+  }
+  return out;
+}
+const progressWidget = ({ done, total }) => view => {
+  const s = view.dom.ownerDocument.createElement('span');
+  s.className = 'todo-progress' + (done === total ? ' complete' : '');
+  s.contentEditable = 'false';
+  // Drawn from a data attribute by CSS so the badge never becomes part of the line's text.
+  s.dataset.progress = `${done}/${total}`;
+  s.title = `${done} of ${total} to-dos done`;
+  return s;
+};
 function build(doc, wanted) {
   const items = scanOutline(doc);
   const valid = new Set(items.map(i => i.pos));
   const folded = new Set([...wanted].filter(p => valid.has(p)));
   const decos = [], hidden = [];
-  const numbers = outlineNumbers(doc);
+  const numbers = outlineNumbers(doc), progress = todoProgress(doc, items);
   for (const [pos, num] of numbers) {
     const item = doc.nodeAt(pos);
     // Longer numbers get a wider gutter so 2.1.10 never overlaps the text.
     decos.push(Decoration.node(pos, pos + item.nodeSize, { 'data-num': num + (num.includes('.') ? '' : '.'), style: `--num-w:${Math.max(1.6, num.length * .58 + .7)}em` }));
+  }
+  // Progress sits at the end of the branch's own line: a heading's text, or a list item's first paragraph.
+  for (const [pos, p] of progress) {
+    const node = doc.nodeAt(pos);
+    const line = node.type.name === 'heading' ? { at: pos + 1, block: node } : node.firstChild?.isTextblock ? { at: pos + 2, block: node.firstChild } : null;
+    if (line) decos.push(Decoration.widget(line.at + line.block.content.size, progressWidget(p), { side: 1, key: `todo-${pos}-${p.done}-${p.total}`, ignoreSelection: true }));
   }
   for (const it of items) {
     const isFolded = folded.has(it.pos);
@@ -83,7 +123,7 @@ function build(doc, wanted) {
     hidden.push({ owner: it.pos, from: it.hideFrom, to: it.end });
     if (it.kind === 'heading') for (const b of it.blocks) decos.push(Decoration.node(b.pos, b.pos + b.node.nodeSize, { class: 'fold-hidden' }));
   }
-  return { folded, items, hidden, numbers, decorations: DecorationSet.create(doc, decos) };
+  return { folded, items, hidden, numbers, progress, decorations: DecorationSet.create(doc, decos) };
 }
 
 function outlinePlugin() {

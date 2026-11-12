@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import { JSDOM } from 'jsdom';
 import { Editor } from '@tiptap/core';
 import { richExtensions, indentRich, outdentRich } from '../src/editors.js';
-import { scanOutline, getFolds, setFolds, toggleFold, foldAll, foldAtCursor, autoHeadingLevel, outlineNumbers } from '../src/outline.js';
+import { scanOutline, getFolds, setFolds, toggleFold, foldAll, foldAtCursor, autoHeadingLevel, outlineNumbers, todoProgress } from '../src/outline.js';
 import { mindmapTree } from '../src/mindmap.js';
 import { layoutMindmap } from '../src/mindmap-view.js';
 
@@ -145,7 +145,7 @@ test('bundled renderer switches to mind map, folds from the map and opens a node
   d.getElementById('viewToggle').click(); await tick();
   assert.equal(d.getElementById('mindmap').hidden, false);
   assert.equal(d.getElementById('rich').hidden, true);
-  assert.ok(d.querySelector('[data-format=bold]').disabled);
+  assert.ok(d.querySelector('[data-format=heading]').disabled);
   assert.equal(labels()[0], '计划');
   assert.equal(labels().length, 10);
   press(nodeEl('工作'), nodeEl('工作').querySelector('.mm-fold')); await tick(40);
@@ -306,12 +306,12 @@ test('nested numbered lists show 1. / 1.1 / 2.1.1 numbers without changing the M
   const md = '1. 已更新\n   1. 品牌\n      1. Logo\n      2. 间距\n   2. 体验\n2. 参考\n   1. 底部\n      1. 素材\n   2. 入口\n   - 备注\n     1. 子项';
   const e = rich(md);
   const nums = [...outlineNumbers(e.state.doc)].map(([pos, n]) => n + ' ' + e.state.doc.nodeAt(pos).firstChild.textContent);
-  assert.deepEqual(nums, ['1 已更新', '1.1 品牌', '1.1.1 Logo', '1.1.2 间距', '1.2 体验', '2 参考', '2.1 底部', '2.1.1 素材', '2.2 入口', '2.2.1 子项']);
+  assert.deepEqual(nums, ['1 已更新', '1.1 品牌', '1.1.1 Logo', '1.1.2 间距', '1.2 体验', '2 参考', '2.1 底部', '2.1.1 素材', '2.2 入口', '2.2.1 备注', '2.2.2 子项']);
   const shown = [...e.view.dom.querySelectorAll('li[data-num]')].map(li => li.dataset.num);
   assert.deepEqual(shown.slice(0, 3), ['1.', '1.1', '1.1.1'], 'top level keeps its trailing dot');
   assert.equal(e.getMarkdown().trim().split('\n')[1].trim(), '1. 品牌', 'file keeps standard Markdown numbering');
   const b = rich('- 备注\n  1. 子项');
-  assert.deepEqual([...outlineNumbers(b.state.doc).values()], ['1'], 'numbered list under a bullet restarts');
+  assert.deepEqual([...outlineNumbers(b.state.doc).values()], ['1', '1.1'], 'bullets are numbered too and nesting continues');
   b.destroy();
   const s = rich('3. 三\n   1. 子');
   assert.deepEqual([...outlineNumbers(s.state.doc).values()], ['3', '3.1'], 'start number is honoured');
@@ -364,4 +364,39 @@ test('mind map nodes keep their whole label and wrap long text instead of cuttin
   const sorted = nodes.filter(n => n.depth === 1).sort((a, b) => a.y - b.y);
   for (let i = 1; i < sorted.length; i++) assert.ok(sorted[i].y >= sorted[i - 1].y + sorted[i - 1].h, 'nodes never overlap');
   e.destroy();
+});
+
+test('toolbar has no bold button, but Ctrl+B still bolds', async () => {
+  const { w, d, tick } = await openMap('段落');
+  assert.equal(d.querySelector('[data-format=bold]'), null);
+  assert.deepEqual([...d.querySelectorAll('[data-format]')].map(b => b.dataset.format), ['heading', 'bullet', 'ordered', 'task']);
+  w.close();
+});
+
+test('app rule: bullets and to-dos are numbered like numbered lists', () => {
+  const e = rich('# 计划\n\n- 工作\n  - [ ] 周报\n  - [x] 会议\n- 生活\n\n段落\n\n- [ ] 新一组');
+  const nums = [...outlineNumbers(e.state.doc)].map(([pos, n]) => n + ' ' + e.state.doc.nodeAt(pos).firstChild.textContent);
+  assert.deepEqual(nums, ['1 工作', '1.1 周报', '1.2 会议', '2 生活', '1 新一组'], 'a paragraph between lists starts a new sequence');
+  assert.ok(e.view.dom.querySelector('ul[data-type=taskList] li[data-num="1.2"]'), 'to-do shows its number');
+  e.destroy();
+});
+
+test('branches show done / total of the to-dos inside them, in the outline and the map', async () => {
+  const e = rich('# 计划\n\n- 工作\n  - [x] 周报\n  - [ ] 会议\n    - [x] 准备\n- [x] 完成项\n  - [x] 子项');
+  const st = e.state, items = scanOutline(st.doc), pr = todoProgress(st.doc, items);
+  const by = label => { let hit; st.doc.descendants((n, p) => { if (!hit && (n.type.name === 'listItem' || n.type.name === 'taskItem' || n.type.name === 'heading') && n.firstChild?.textContent === label) hit = p; if (!hit && n.type.name === 'heading' && n.textContent === label) hit = p; }); return pr.get(hit); };
+  assert.deepEqual(by('计划'), { done: 4, total: 5 });
+  assert.deepEqual(by('工作'), { done: 2, total: 3 });
+  assert.deepEqual(by('完成项'), { done: 1, total: 1 });
+  const badges = [...e.view.dom.querySelectorAll('.todo-progress')].map(b => b.dataset.progress);
+  assert.ok(badges.includes('2/3') && badges.includes('4/5'));
+  assert.ok(e.view.dom.querySelector('.todo-progress.complete'), 'fully done branch is marked complete');
+  e.destroy();
+  const { w, d, nodeEl, press, tick } = await openMap('# 计划\n\n- 工作\n  - [ ] 周报\n  - [ ] 会议');
+  d.getElementById('viewToggle').click(); await tick();
+  assert.equal(nodeEl('工作').querySelector('.mm-progress').textContent, '0/2');
+  press(nodeEl('周报'), nodeEl('周报').querySelector('.mm-check')); await tick(30);
+  assert.equal(nodeEl('工作').querySelector('.mm-progress').textContent, '1/2', 'checking a to-do in the map updates progress');
+  assert.equal(nodeEl('周报').querySelector('.mm-num').textContent, '1.1');
+  w.close();
 });

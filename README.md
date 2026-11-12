@@ -15,7 +15,7 @@ Open **Markdown Sticky** from the Start menu, or double-click `win-unpacked/Mark
 | End a list | Enter on an empty item |
 | New note | Ctrl+N |
 | Save | Ctrl+S (saving is automatic) |
-| Bold | Ctrl+B |
+| Bold | Ctrl+B (no toolbar button) |
 | Undo / redo | Ctrl+Z / Ctrl+Shift+Z |
 | Leave the editor | Esc, then Tab |
 | Fold / open branch at caret | Ctrl+↑ / Ctrl+↓ |
@@ -25,9 +25,9 @@ Open **Markdown Sticky** from the Start menu, or double-click `win-unpacked/Mark
 | Zoom mind map | Ctrl+= / Ctrl+− / Ctrl+0 |
 | Light ↔ dark | Ctrl+Shift+L |
 
-## Numbering
+## Numbering and to-dos
 
-Nested numbered lists show hierarchical numbers: 1. → 1.1 → 1.1.1, in both the outline and the mind map. Press Tab on a numbered item to go one level deeper. The numbers are display only; the file keeps standard Markdown numbering, so other editors still read it.
+Every list item shows a hierarchical number, 1. → 1.1 → 1.1.1, whether it is a numbered item, a bullet or a to-do, in both the outline and the mind map. Tab goes one level deeper. To-dos keep their checkbox after the number. Any foldable branch that contains to-dos shows done / total (for example 2/5) at the end of its line, counting every to-do inside it; it turns into ✓ when all are done and updates as you check items, also in the mind map. The numbers are display only; the file keeps standard Markdown numbering, so other editors still read it.
 
 ## Title
 
@@ -86,7 +86,7 @@ Node.js 24+: `npm ci` → `npm run build` → `npm test`. `npm run icon` regener
 | 结束列表 | 在空项目上按 Enter |
 | 新便签 | Ctrl+N |
 | 保存 | Ctrl+S（也会自动保存） |
-| 加粗 | Ctrl+B |
+| 加粗 | Ctrl+B（工具栏不再有按钮） |
 | 撤销 / 重做 | Ctrl+Z / Ctrl+Shift+Z |
 | 离开编辑器 | Esc，再按 Tab |
 | 折叠 / 展开光标所在分支 | Ctrl+↑ / Ctrl+↓ |
@@ -96,9 +96,9 @@ Node.js 24+: `npm ci` → `npm run build` → `npm test`. `npm run icon` regener
 | 缩放思维导图 | Ctrl+= / Ctrl+− / Ctrl+0 |
 | 浅色 ↔ 深色 | Ctrl+Shift+L |
 
-### 层级编号
+### 层级编号与待办
 
-嵌套的编号列表显示为层级编号：1. → 1.1 → 1.1.1，大纲和思维导图都一样。在编号项上按 Tab 进入下一级。编号只影响显示，文件仍是标准 Markdown 编号，其他编辑器照常可读。
+所有列表项（编号、项目符号、待办）都显示层级编号 1. → 1.1 → 1.1.1，大纲和思维导图都一样；按 Tab 进入下一级。待办的勾选框放在编号后面。包含待办的可折叠分支会在行尾显示完成进度（例如 2/5），统计其中所有待办；全部完成时显示 ✓，勾选时实时更新，导图中同样显示。编号只影响显示，文件仍是标准 Markdown 编号，其他编辑器照常可读。
 
 ### 标题
 

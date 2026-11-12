@@ -8,6 +8,7 @@
 - Never commit or upload personal note content, data/index.json, runtime caches, login credentials, or machine-specific private paths. Use synthetic fixtures in tests and logs.
 - Build into release/, never into an installed app folder containing data/. A release archive must not contain a data/ directory. Back up the installed program and notes before replacing app resources.
 - An update may require a one-time relaunch to load new code. Do not force-kill the running app or risk unsaved text. Clearly distinguish source/build completion, installation, and activation.
+- App rule (user, 2026-11-12): every list item — numbered, bullet or to-do — shows a hierarchical number (1. / 1.1 / 1.1.1) in both the outline and the mind map. Never remove or bypass this; numbers are display-only and the Markdown stays standard.
 - Maintain live discovery of UUID-named Markdown files, automatic list updates, and revision checks that preserve both versions when external changes conflict with unsaved typing.
 
 ---
@@ -22,4 +23,5 @@
 - 不提交或上传个人便签、data/index.json、运行缓存、登录凭据或机器特定私有路径。测试与日志使用合成数据。
 - 构建到 release/，不构建到包含 data/ 的安装目录。发布包不能含 data/；替换应用资源前备份程序与便签。
 - 更新可能需要重开一次来加载代码，不强杀应用或危及未保存文字。区分源码/构建完成、安装完成及实际生效。
+- 应用铁律（用户，2026-11-12）：所有列表项（编号、项目符号、待办）在大纲和思维导图中都显示层级编号（1. / 1.1 / 1.1.1），不得移除或绕过；编号只影响显示，Markdown 保持标准格式。
 - 保留 UUID Markdown 自动发现、列表自动更新及修订检查；外部修改与未保存输入冲突时必须保留两份。

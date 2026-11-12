@@ -1,5 +1,15 @@
 # 开发日志
 
+## 2026-11-12 · v1.7.0 · 全列表编号与待办进度
+
+**需求**：所有项目都要显示数字序列（用户定为应用铁律）；思考待办如何与折叠、编号结合；去掉 B 按钮。
+
+**实现**：outlineNumbers 不再区分列表类型，所有列表项按层级编号；同一层相邻的列表共用序列，中间出现其他块（段落、标题）则重新开始，编号列表保留自定义起始号。CSS 隐藏圆点并在所有 li 上显示编号，待办勾选框保持在编号与文字之间，折叠箭头放在编号左侧。新增 todoProgress：对每个可折叠分支统计其隐藏范围内的 taskItem 数量与已完成数，在分支行尾用小部件显示 done/total，全部完成时加 ✓；徽章文字由 CSS 从 data 属性绘制，不进入文本内容。导图从插件状态读取同一份进度显示在节点上。规则写入 AGENTS.md。
+
+**验证**：54 项测试通过，覆盖项目符号与待办的编号、分组重新编号、多层进度统计、完成状态，以及在导图勾选后进度更新。真实窗口效果需用户确认。
+
+---
+
 ## 2026-11-12 · v1.6.1 · 页面缩放与导图全文
 
 **反馈截图**：窗口内容整体放大，右上角按钮看不到；导图节点显示「工…」「LOGO修…」「素材…」。
@@ -136,6 +146,14 @@
 ---
 
 ## English development log
+
+### 2026-11-12 · v1.7.0 · Numbers everywhere and to-do progress
+
+**Request.** Every item must show a number (declared an app rule); combine to-dos with folding and numbering; remove the B button.
+
+**Implementation.** outlineNumbers now numbers every list item regardless of list type. Adjacent lists at one level share a sequence; any other block between them restarts it; numbered lists keep a custom start. CSS hides bullets and shows the number on every li, with to-do checkboxes between number and text and the fold arrow left of the number. A new todoProgress counts taskItems and checked ones inside each foldable branch and shows done/total at the end of the branch's line, with ✓ when complete; the badge text is drawn by CSS from a data attribute so it never enters the text. The map reads the same progress from plugin state. The rule is recorded in AGENTS.md.
+
+**Validation.** 54 tests pass, covering numbering of bullets and to-dos, restarts between groups, multi-level progress, completion, and progress updating after checking in the map. Real-window appearance still needs confirmation.
 
 ### 2026-11-12 · v1.6.1 · Page zoom and full map labels
 

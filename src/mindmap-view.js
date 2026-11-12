@@ -18,7 +18,7 @@ export function labelWidth(text, size = 13, weight = 400) { return Math.max(MIN_
 // Node box: width capped at MAX_W, height grows by wrapped lines.
 export function nodeBox(n, depth) {
   const size = depth ? 13 : 15, weight = depth ? (n.kind === 'heading' ? 600 : 400) : 650;
-  const extra = (n.checked != null ? 20 : 0) + (n.num ? measure(n.num, 13, 500) + 6 : 0) + (n.children.length ? 24 : 0) + 22;
+  const extra = (n.checked != null ? 20 : 0) + (n.num ? measure(n.num, 13, 500) + 6 : 0) + (n.progress ? measure(`${n.progress.done}/${n.progress.total}`, 10.5, 600) + 18 : 0) + (n.children.length ? 24 : 0) + 22;
   const text = Math.ceil(measure(n.label, size, weight)) + 2;
   const w = Math.max(MIN_W, Math.min(MAX_W, text + extra));
   const lines = Math.max(1, Math.ceil(text / Math.max(40, w - extra)));
@@ -131,7 +131,7 @@ export class MindmapView {
     const st = outlineKey.getState(editor.state);
     this.tree = mindmapTree(editor.state.doc, this.title);
     // Same 1.1 / 2.1.1 numbers as the outline.
-    const walk = n => { const num = st.numbers?.get(n.pos); if (num) n.num = num; n.children.forEach(walk); };
+    const walk = n => { const num = st.numbers?.get(n.pos); if (num) n.num = num; const pr = st.progress?.get(n.pos); if (pr) n.progress = pr; n.children.forEach(walk); };
     walk(this.tree);
     this.foldable = new Set(st.items.map(i => i.pos));
     const { nodes, width, height } = layoutMindmap(this.tree, st.folded);
@@ -169,7 +169,9 @@ export class MindmapView {
         el.append(c);
       }
       if (n.num) { const num = d.createElement('span'); num.className = 'mm-num'; num.textContent = n.num; el.append(num); }
+      const progressEl = n.progress && Object.assign(d.createElement('span'), { className: 'mm-progress' + (n.progress.done === n.progress.total ? ' complete' : ''), textContent: `${n.progress.done}/${n.progress.total}`, title: `${n.progress.done} of ${n.progress.total} to-dos done` });
       const label = d.createElement('span'); label.className = 'mm-label'; label.textContent = n.label; el.append(label);
+      if (progressEl) el.append(progressEl);
       if (canFold) {
         const f = d.createElement('span'); f.className = 'mm-fold'; f.title = it.collapsed ? 'Expand' : 'Collapse';
         f.textContent = it.collapsed ? String(n.children.length) : '−';

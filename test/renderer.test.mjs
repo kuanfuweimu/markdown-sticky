@@ -41,7 +41,7 @@ test('notes with tables open read-only so the file is not rewritten', async () =
   w.eval(fs.readFileSync('dist/renderer.js','utf8'));
   await new Promise(resolve=>setTimeout(resolve,100));
   assert.ok(w.document.querySelector('.tiptap[contenteditable=false]'));
-  assert.ok(w.document.querySelector('[data-format=bold]').disabled);
+  assert.ok(w.document.querySelector('[data-format=heading]').disabled);
   w.dispatchEvent(new w.Event('blur'));
   assert.equal(saves,0);
   w.close();
